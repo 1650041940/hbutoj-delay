@@ -1,0 +1,20 @@
+2026-04-04 00:00:01 [scheduling-1] INFO  hoj - 获取牛客API的比赛列表成功！共获取数据9条
+2026-04-04 02:00:00 [scheduling-1] INFO  hoj - 获取牛客API的比赛列表成功！共获取数据9条
+2026-04-04 03:00:00 [scheduling-1] INFO  hoj - 获取Codeforces Rating成功！
+2026-04-04 04:00:01 [scheduling-1] INFO  hoj - 获取牛客API的比赛列表成功！共获取数据9条
+2026-04-04 06:00:01 [scheduling-1] INFO  hoj - 获取牛客API的比赛列表成功！共获取数据9条
+2026-04-04 07:21:36 [http-nio-6688-exec-7] INFO  org.apache.coyote.http11.Http11Processor - Error parsing HTTP request header
+ Note: further occurrences of HTTP request parsing errors will be logged at DEBUG level.
+java.lang.IllegalArgumentException: Invalid character found in method name. HTTP method names must be tokens
+	at org.apache.coyote.http11.Http11InputBuffer.parseRequestLine(Http11InputBuffer.java:418)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:260)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:65)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:868)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1594)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:49)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)
+	at java.lang.Thread.run(Thread.java:748)
+2026-04-04 08:00:01 [scheduling-1] INFO  hoj - 获取牛客API的比赛列表成功！共获取数据9条
+2026-04-04 10:00:01 [scheduling-1] INFO  hoj - 获取牛客API的比赛列表成功！共获取数据9条
