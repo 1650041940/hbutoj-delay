@@ -1,6 +1,31 @@
 USE `hoj`;
 
 /*
+* 2026.04.05 增加题目难度分 difficulty_rating（用于做题 rating/推荐）
+*/
+DROP PROCEDURE IF EXISTS problem_Add_difficulty_rating;
+DELIMITER $$
+
+CREATE PROCEDURE problem_Add_difficulty_rating ()
+BEGIN
+
+IF NOT EXISTS (
+	SELECT 1
+	FROM information_schema.`COLUMNS`
+	WHERE table_schema = DATABASE()
+	  AND table_name = 'problem'
+	  AND column_name = 'difficulty_rating'
+) THEN
+	ALTER TABLE `problem` ADD COLUMN `difficulty_rating` INT(11) DEFAULT '0' COMMENT '题目难度分(用于做题rating/推荐，建议600~2600)' AFTER `difficulty`;
+END IF;
+
+END$$
+
+DELIMITER ;
+CALL problem_Add_difficulty_rating;
+DROP PROCEDURE problem_Add_difficulty_rating;
+
+/*
 * 2021.08.07 修改OI题目得分在OI排行榜新计分字段 分数计算为：OI题目总得分*0.1+2*题目难度
 */
 DROP PROCEDURE

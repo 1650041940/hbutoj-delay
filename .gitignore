@@ -13,3 +13,7 @@
 
 # Common
 *.log
+
+# Local build artifacts (too large for GitHub)
+/src/backend/*.jar
+/src/judgeserver/*.jar

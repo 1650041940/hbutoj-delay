@@ -9,7 +9,7 @@ docker build -t hoj-mysql .
 或者直接下载本项目，进入到当前文件夹执行打包命令
 
 ```shell
-git clone https://gitee.com/himitzh0730/hoj-deploy.git && cd hoj-deploy/src/mysql
+git clone <YOUR_DEPLOY_REPO_URL> && cd <YOUR_DEPLOY_REPO_DIR>/src/mysql
 docker build -t hoj-mysql .
 ```
 
@@ -25,7 +25,7 @@ docker run -d --name hoj-mysql \
 -p 3306:3306 \
 --restart="always" \
 hoj-mysql
-#registry.cn-shenzhen.aliyuncs.com/hcode/hoj_database
+# ghcr.io/1650041940/hbutoj_database:latest
 ```
 
 
@@ -36,7 +36,7 @@ docker-compose 启动
 version: "3"
 services:
   hoj-mysql:
-    #image: registry.cn-shenzhen.aliyuncs.com/hcode/hoj_database
+	#image: ghcr.io/1650041940/hbutoj_database:latest
     image: hoj-mysql
     container_name: hoj-mysql
     restart: always

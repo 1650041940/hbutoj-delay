@@ -1,11 +1,15 @@
-version: "3"
 services:
 
         
   hoj-mysql:
-    image: registry.cn-shenzhen.aliyuncs.com/hcode/hoj_database
+    image: ${HBUTOJ_MYSQL_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}}/${HBUTOJ_MYSQL_IMAGE:-hbutoj_database}:${HBUTOJ_IMAGE_TAG:-latest}
     container_name: hoj-mysql
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: ${MYSQL_CHECKER_MYSQL_MEM_LIMIT:-512M}
+    mem_limit: ${MYSQL_CHECKER_MYSQL_MEM_LIMIT:-512M}
     volumes:
       - ./hoj/data/mysql/data:/var/lib/mysql
     environment:
@@ -22,8 +26,13 @@ services:
       retries: 10
   
   hoj-mysql-checker:
-    image: registry.cn-shenzhen.aliyuncs.com/hcode/hoj_database_checker
+    image: ${HBUTOJ_MYSQL_CHECKER_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}}/${HBUTOJ_MYSQL_CHECKER_IMAGE:-hbutoj_database_checker}:${HBUTOJ_IMAGE_TAG:-latest}
     container_name: hoj-mysql-checker
+    deploy:
+      resources:
+        limits:
+          memory: ${MYSQL_CHECKER_CHECKER_MEM_LIMIT:-128M}
+    mem_limit: ${MYSQL_CHECKER_CHECKER_MEM_LIMIT:-128M}
     depends_on:
       - hoj-mysql
     links:

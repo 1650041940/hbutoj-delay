@@ -1,6 +1,8 @@
 ## 前言
 
-当前文件夹为打包`hoj-backend`镜像的相关文件，将这些文件复制到同一个文件夹内，**然后打包[DataBackup](https://gitee.com/himitzh0730/hoj/tree/master/hoj-springboot/DataBackup)（SpringBoot项目）成jar包也放到当前文件夹**，之后执行以下命令进行打包成镜像
+当前文件夹为打包后端镜像（`hoj-backend` 服务所用镜像）的构建上下文文件。
+
+你需要先在源码仓库中打包 DataBackup（SpringBoot 模块）生成 jar，然后把 jar 放到当前目录，再执行构建。
 
 ```shell
 docker build -t hoj-backend .
@@ -9,7 +11,7 @@ docker build -t hoj-backend .
 或者直接下载本项目，进入到当前文件夹执行打包命令
 
 ```shell
-git clone https://gitee.com/himitzh0730/hoj-deploy.git && cd hoj-deploy/src/backend
+git clone <YOUR_DEPLOY_REPO_URL> && cd <YOUR_DEPLOY_REPO_DIR>/src/backend
 
 docker build -t hoj-backend .
 ```
@@ -24,7 +26,7 @@ docker-compose 启动
 version: "3"
 services:
   hoj-backend:
-#    image: registry.cn-shenzhen.aliyuncs.com/hcode/hoj_backend
+#    image: ghcr.io/1650041940/hbutoj_backend:latest
 	image: hoj-backend
     container_name: hoj-backend
     restart: always
@@ -87,7 +89,7 @@ services:
     command: redis-server --requirepass "hoj123456" --appendonly yes
         
   hoj-mysql:
-    image: registry.cn-shenzhen.aliyuncs.com/hcode/hoj_database
+    image: ghcr.io/1650041940/hbutoj_database:latest
     container_name: hoj-mysql
     restart: always
     volumes:

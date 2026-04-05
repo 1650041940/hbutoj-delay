@@ -4,24 +4,57 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 ENV TZ=Asia/Shanghai
 
-RUN buildDeps='software-properties-common libtool wget unzip' && \
-    apt-get update && apt-get install -y python python3.7 mono-devel $buildDeps curl bash && \
-    add-apt-repository ppa:openjdk-r/ppa && add-apt-repository ppa:longsleep/golang-backports && \
-	add-apt-repository ppa:ubuntu-toolchain-r/test && \
-	apt-get update && apt-get install -y golang-1.19-go openjdk-8-jdk gcc-9 g++-9 && \
-	ln -s /usr/lib/go-1.19/bin/go /usr/bin/go && \
-    update-alternatives --install  /usr/bin/gcc gcc /usr/bin/gcc-9 40 && \
-    update-alternatives --install  /usr/bin/g++ g++ /usr/bin/g++-9 40 && \
-	add-apt-repository ppa:pypy/ppa && apt-get update && apt install -y pypy pypy3 && \
-	add-apt-repository ppa:ondrej/php && apt-get update && apt-get install -y php7.2-cli && \
-	cd /tmp && wget -O jsv8.zip  https://storage.googleapis.com/chromium-v8/official/canary/v8-linux64-dbg-8.4.109.zip && \
+RUN buildDeps='libtool wget unzip xz-utils' && \
+	apt-get update && apt-get install -y \
+		gcc g++ \
+		python python3.7 mono-devel \
+		openjdk-8-jdk \
+		pypy \
+		php7.2-cli \
+		ruby rustc \
+		curl bash ca-certificates bzip2 $buildDeps && \
+	GO_VERSION='1.19.13' && \
+	arch="$(dpkg --print-architecture)" && \
+	case "$arch" in \
+	  amd64) goArch='amd64' ;; \
+	  arm64) goArch='arm64' ;; \
+	  *) echo "Unsupported architecture: $arch" >&2; exit 1 ;; \
+	esac && \
+	curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-${goArch}.tar.gz" -o /tmp/go.tar.gz && \
+	rm -rf /usr/local/go && tar -C /usr/local -xzf /tmp/go.tar.gz && \
+	rm -f /tmp/go.tar.gz && \
+	ln -sf /usr/local/go/bin/go /usr/bin/go && \
+	go version && \
+	cd /tmp && wget -O jsv8.zip https://storage.googleapis.com/chromium-v8/official/canary/v8-linux64-dbg-8.4.109.zip && \
 	unzip -d /usr/bin/jsv8 jsv8.zip && rm -rf /tmp/jsv8.zip && \
-	curl -fsSL https://deb.nodesource.com/setup_14.x | bash && \
-	apt-get install -y nodejs && \
-	apt-get install -y ruby && \
-	apt-get install -y rustc && \
-    apt-get purge -y --auto-remove $buildDeps && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+	NODE_VERSION='14.21.3' && \
+	arch="$(dpkg --print-architecture)" && \
+	case "$arch" in \
+	  amd64) nodeArch='x64' ;; \
+	  arm64) nodeArch='arm64' ;; \
+	  *) echo "Unsupported architecture: $arch" >&2; exit 1 ;; \
+	esac && \
+	curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${nodeArch}.tar.xz" -o /tmp/node.tar.xz && \
+	tar -xJf /tmp/node.tar.xz -C /usr/local --strip-components=1 && \
+	rm -f /tmp/node.tar.xz && \
+	ln -sf /usr/local/bin/node /usr/bin/node && \
+	node -v && npm -v && \
+	PYPY3_VERSION='7.3.16' && \
+	arch="$(dpkg --print-architecture)" && \
+	case "$arch" in \
+	  amd64) pypyArch='linux64' ;; \
+	  arm64) pypyArch='aarch64' ;; \
+	  *) echo "Unsupported architecture for PyPy3: $arch" >&2; exit 1 ;; \
+	esac && \
+	curl -fsSL "https://downloads.python.org/pypy/pypy3.10-v${PYPY3_VERSION}-${pypyArch}.tar.bz2" -o /tmp/pypy3.tar.bz2 && \
+	rm -rf /opt/pypy3 && mkdir -p /opt/pypy3 && \
+	tar -xjf /tmp/pypy3.tar.bz2 -C /opt/pypy3 --strip-components=1 && \
+	rm -f /tmp/pypy3.tar.bz2 && \
+	ln -sf /opt/pypy3/bin/pypy3 /usr/bin/pypy3 && \
+	ln -sf /opt/pypy3/bin/pypy3 /usr/bin/pypy3.10 && \
+	pypy3 -V && \
+	apt-get purge -y --auto-remove $buildDeps && \
+	apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /judge/test_case /judge/run /judge/spj /judge/log
 

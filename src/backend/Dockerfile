@@ -1,6 +1,6 @@
-FROM openjdk:8
+FROM eclipse-temurin:8-jre
 
-COPY *.jar /app.jar
+COPY hoj-backend.jar /app.jar
 
 COPY check_nacos.sh /check_nacos.sh
 

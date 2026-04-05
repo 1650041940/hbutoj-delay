@@ -9,7 +9,7 @@ docker build -t hoj-rsync .
 或者直接下载本项目，进入到当前文件夹执行打包命令
 
 ```shell
-git clone https://gitee.com/himitzh0730/hoj-deploy.git && cd hoj-deploy/src/rsync
+git clone <YOUR_DEPLOY_REPO_URL> && cd <YOUR_DEPLOY_REPO_DIR>/src/rsync
 
 docker build -t hoj-rsync .
 ```
@@ -29,7 +29,7 @@ docker run启动
   -p 873:873 \
   --restart=always \
   hoj-rsync
-  # registry.cn-shenzhen.aliyuncs.com/hcode/hoj_rsync:1.0
+  # ghcr.io/1650041940/hbutoj_rsync:latest
   ```
 
 - 从服务器（Judgeserver所在的服务器）
@@ -44,7 +44,7 @@ docker run启动
   -p 873:873 \
   --restart=always \
   hoj-rsync
-  # registry.cn-shenzhen.aliyuncs.com/hcode/hoj_rsync:1.0
+  # ghcr.io/1650041940/hbutoj_rsync:latest
   ```
 
   
@@ -57,7 +57,7 @@ docker-compose启动
   version: "3"
   services:
     hoj-rsync-master:
-  #    image: registry.cn-shenzhen.aliyuncs.com/hcode/hoj_rsync:1.0
+  #    image: ghcr.io/1650041940/hbutoj_rsync:latest
       image: hoj-rsync
       container_name: hoj-rsync-master
       volumes:
@@ -76,7 +76,7 @@ docker-compose启动
   version: "3"
   services:
     hoj-rsync-slave:
-  #    image: registry.cn-shenzhen.aliyuncs.com/hcode/hoj_rsync:1.0
+  #    image: ghcr.io/1650041940/hbutoj_rsync:latest
       image: hoj-rsync
       container_name: hoj-rsync-slave
       restart: always

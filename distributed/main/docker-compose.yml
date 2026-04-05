@@ -1,10 +1,14 @@
-version: "3"
 services:
 
   hoj-redis:
     image: redis:5.0.9-alpine
     container_name: hoj-redis
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: ${REDIS_MEM_LIMIT:-96M}
+    mem_limit: ${REDIS_MEM_LIMIT:-96M}
     volumes:
       - ${HOJ_DATA_DIRECTORY}/data/redis/data:/data
     networks:
@@ -17,11 +21,16 @@ services:
         
   hoj-mysql:
     #仅支持amd64
-    image: registry.cn-shenzhen.aliyuncs.com/hcode/hoj_database
+    image: ${HBUTOJ_MYSQL_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}}/${HBUTOJ_MYSQL_IMAGE:-hbutoj_database}:${HBUTOJ_IMAGE_TAG:-latest}
     #支持amd64、arm64
-    #image: himitzh/hoj_database
+    #image: ghcr.io/1650041940/hbutoj_database:latest
     container_name: hoj-mysql
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: ${MYSQL_MEM_LIMIT:-512M}
+    mem_limit: ${MYSQL_MEM_LIMIT:-512M}
     volumes:
       - ${HOJ_DATA_DIRECTORY}/data/mysql/data:/var/lib/mysql
     environment:
@@ -41,12 +50,17 @@ services:
     #image: centralx/nacos-server:1.4.2
     container_name: hoj-nacos
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: ${NACOS_MEM_LIMIT:-320M}
+    mem_limit: ${NACOS_MEM_LIMIT:-320M}
     depends_on: 
       - hoj-mysql
     environment:
-      - JVM_XMX=384m
-      - JVM_XMS=384m
-      - JVM_XMN=192m
+      - JVM_XMX=${NACOS_JVM_XMX:-256m}
+      - JVM_XMS=${NACOS_JVM_XMS:-256m}
+      - JVM_XMN=${NACOS_JVM_XMN:-128m}
       - MODE=standalone
       - SPRING_DATASOURCE_PLATFORM=mysql
       - MYSQL_SERVICE_HOST=${MYSQL_HOST:-172.20.0.3}
@@ -68,11 +82,16 @@ services:
     
   hoj-backend:
     #仅支持amd64
-    image: registry.cn-shenzhen.aliyuncs.com/hcode/hoj_backend
+    image: ${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}/${HBUTOJ_BACKEND_IMAGE:-hbutoj_backend}:${HBUTOJ_IMAGE_TAG:-latest}
     #支持amd64、arm64
-    #image: himitzh/hoj_backend
+    #image: ghcr.io/1650041940/hbutoj_backend:latest
     container_name: hoj-backend
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: ${BACKEND_MEM_LIMIT:-512M}
+    mem_limit: ${BACKEND_MEM_LIMIT:-512M}
     depends_on:
       - hoj-redis
       - hoj-mysql
@@ -83,6 +102,7 @@ services:
       - ${HOJ_DATA_DIRECTORY}/log/backend:/hoj/log/backend
     environment:
       - TZ=Asia/Shanghai
+      - JAVA_OPTS=${BACKEND_JAVA_OPTS:--Xms128m -Xmx320m}
       - BACKEND_SERVER_PORT=${BACKEND_PORT:-6688}
       - NACOS_URL=${NACOS_HOST:-172.20.0.4}:8848
       - NACOS_USERNAME=${NACOS_USERNAME:-root} # 登录 http://ip:8848/nacos 分布式配置中心与注册中心的后台的账号
@@ -131,11 +151,16 @@ services:
   
   hoj-frontend:
     #仅支持amd64
-    image: registry.cn-shenzhen.aliyuncs.com/hcode/hoj_frontend
+    image: ${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}/${HBUTOJ_FRONTEND_IMAGE:-hbutoj_frontend}:${HBUTOJ_IMAGE_TAG:-latest}
     #支持amd64、arm64
-    #image: himitzh/hoj_frontend
+    #image: ghcr.io/1650041940/hbutoj_frontend:latest
     container_name: hoj-frontend
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: ${FRONTEND_MEM_LIMIT:-96M}
+    mem_limit: ${FRONTEND_MEM_LIMIT:-96M}
     # 开启https，请提供证书
     #volumes:
     #  - ./server.crt:/etc/nginx/etc/crt/server.crt
@@ -157,10 +182,15 @@ services:
 
   hoj-rsync-master:
     #仅支持amd64
-    image: registry.cn-shenzhen.aliyuncs.com/hcode/hoj_rsync:1.0
+    image: ${HBUTOJ_RSYNC_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}}/${HBUTOJ_RSYNC_IMAGE:-hbutoj_rsync}:${HBUTOJ_RSYNC_IMAGE_TAG:-latest}
     #支持amd64、arm64
-    #image: himitzh/hoj_rsync
+    #image: ghcr.io/1650041940/hbutoj_rsync:latest
     container_name: hoj-rsync-master
+    deploy:
+      resources:
+        limits:
+          memory: ${RSYNC_MEM_LIMIT:-64M}
+    mem_limit: ${RSYNC_MEM_LIMIT:-64M}
     volumes:
       - ${HOJ_DATA_DIRECTORY}/testcase:/hoj/testcase:ro
     environment:
@@ -172,10 +202,15 @@ services:
 
   hoj-mysql-checker:
     #仅支持amd64
-    image: registry.cn-shenzhen.aliyuncs.com/hcode/hoj_database_checker
+    image: ${HBUTOJ_MYSQL_CHECKER_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}}/${HBUTOJ_MYSQL_CHECKER_IMAGE:-hbutoj_database_checker}:${HBUTOJ_IMAGE_TAG:-latest}
     #支持amd64、arm64
-    #image: himitzh/hoj_database_checker
+    #image: ghcr.io/1650041940/hbutoj_database_checker:latest
     container_name: hoj-mysql-checker
+    deploy:
+      resources:
+        limits:
+          memory: ${MYSQL_CHECKER_MEM_LIMIT:-128M}
+    mem_limit: ${MYSQL_CHECKER_MEM_LIMIT:-128M}
     depends_on:
       - hoj-mysql
     links:
@@ -190,6 +225,11 @@ services:
     restart: always
     container_name: hoj-autohealth
     image: willfarrell/autoheal
+    deploy:
+      resources:
+        limits:
+          memory: ${AUTOHEAL_MEM_LIMIT:-32M}
+    mem_limit: ${AUTOHEAL_MEM_LIMIT:-32M}
     environment:
       - AUTOHEAL_CONTAINER_LABEL=all
     volumes:

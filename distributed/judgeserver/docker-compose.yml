@@ -1,13 +1,17 @@
-version: "3"
 services:
 
   hoj-judgeserver:
     #仅支持amd64
-    image: registry.cn-shenzhen.aliyuncs.com/hcode/hoj_judgeserver
+    image: ${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}/${HBUTOJ_JUDGESERVER_IMAGE:-hbutoj_judgeserver}:${HBUTOJ_IMAGE_TAG:-latest}
     #支持amd64、arm64
-    #image: himitzh/hoj_judgeserver
+    #image: ghcr.io/1650041940/hbutoj_judgeserver:latest
     container_name: hoj-judgeserver
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: ${JUDGESERVER_MEM_LIMIT:-512M}
+    mem_limit: ${JUDGESERVER_MEM_LIMIT:-512M}
     volumes:
       - ${HOJ_JUDGESERVER_DATA_DIRECTORY}/test_case:/judge/test_case
       - ${HOJ_JUDGESERVER_DATA_DIRECTORY}/log:/judge/log
@@ -17,6 +21,7 @@ services:
       - ${HOJ_JUDGESERVER_DATA_DIRECTORY}/log/judgeserver:/judge/log/judgeserver
     environment:
       - TZ=Asia/Shanghai
+      - JAVA_OPTS=${JUDGESERVER_JAVA_OPTS:--Xms128m -Xmx320m}
       - JUDGE_SERVER_IP=${JUDGE_SERVER_IP} # 服务器公网ip
       - JUDGE_SERVER_PORT=${JUDGE_SERVER_PORT:-8088}
       - JUDGE_SERVER_NAME=${JUDGE_SERVER_NAME} # 判题服务的名称，最好每个判题机不一样
@@ -40,11 +45,16 @@ services:
 
   hoj-rsync-slave:
     #仅支持amd64
-    image: registry.cn-shenzhen.aliyuncs.com/hcode/hoj_rsync:1.0
+    image: ${HBUTOJ_RSYNC_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}}/${HBUTOJ_RSYNC_IMAGE:-hbutoj_rsync}:${HBUTOJ_RSYNC_IMAGE_TAG:-latest}
     #支持amd64、arm64
-    #image: himitzh/hoj_rsync
+    #image: ghcr.io/1650041940/hbutoj_rsync:latest
     container_name: hoj-rsync-slave
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: ${RSYNC_MEM_LIMIT:-64M}
+    mem_limit: ${RSYNC_MEM_LIMIT:-64M}
     volumes:
       - ${HOJ_JUDGESERVER_DATA_DIRECTORY}/test_case:/hoj/testcase
       - ${HOJ_JUDGESERVER_DATA_DIRECTORY}/log:/hoj/log

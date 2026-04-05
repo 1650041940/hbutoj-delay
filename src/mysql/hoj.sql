@@ -545,6 +545,7 @@ CREATE TABLE `problem` (
   `is_remote` tinyint(1) DEFAULT '0' COMMENT '是否为vj判题',
   `source` text COMMENT '题目来源',
   `difficulty` int(11) DEFAULT '0' COMMENT '题目难度,0简单，1中等，2困难',
+  `difficulty_rating` int(11) DEFAULT '0' COMMENT '题目难度分(用于做题rating/推荐，建议600~2600)',
   `hint` longtext COMMENT '备注,提醒',
   `auth` int(11) DEFAULT '1' COMMENT '默认为1公开，2为私有，3为比赛题目',
   `io_score` int(11) DEFAULT '100' COMMENT '当该题目为io题目时的分数',
@@ -574,6 +575,112 @@ CREATE TABLE `problem` (
   CONSTRAINT `problem_ibfk_1` FOREIGN KEY (`author`) REFERENCES `user_info` (`username`) ON DELETE NO ACTION ON UPDATE CASCADE,
   CONSTRAINT `problem_ibfk_2` FOREIGN KEY (`gid`) REFERENCES `group` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8;
+
+/*Table structure for table `user_practice_rating` */
+
+DROP TABLE IF EXISTS `user_practice_rating`;
+
+CREATE TABLE `user_practice_rating` (
+  `uid` varchar(32) NOT NULL COMMENT '用户uuid',
+  `rating` int(11) NOT NULL DEFAULT '1200' COMMENT '做题rating',
+  `solved_count` int(11) NOT NULL DEFAULT '0' COMMENT '已AC题目数（用于快速展示）',
+  `last_calc_month` varchar(7) DEFAULT NULL COMMENT '最后一次月度计算月份 yyyy-MM',
+  `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
+  `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`uid`),
+  CONSTRAINT `user_practice_rating_ibfk_1` FOREIGN KEY (`uid`) REFERENCES `user_info` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*Table structure for table `user_practice_rating_history` */
+
+DROP TABLE IF EXISTS `user_practice_rating_history`;
+
+CREATE TABLE `user_practice_rating_history` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `uid` varchar(32) NOT NULL COMMENT '用户uuid',
+  `month` varchar(7) NOT NULL COMMENT '月份 yyyy-MM',
+  `old_rating` int(11) NOT NULL,
+  `delta` int(11) NOT NULL,
+  `new_rating` int(11) NOT NULL,
+  `solved_count` int(11) NOT NULL DEFAULT '0',
+  `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uid_month_unique` (`uid`,`month`),
+  KEY `uid` (`uid`),
+  CONSTRAINT `user_practice_rating_history_ibfk_1` FOREIGN KEY (`uid`) REFERENCES `user_info` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*Table structure for table `user_contest_rating` */
+
+DROP TABLE IF EXISTS `user_contest_rating`;
+
+CREATE TABLE `user_contest_rating` (
+  `uid` varchar(32) NOT NULL COMMENT '用户uuid',
+  `rating` int(11) NOT NULL DEFAULT '1500' COMMENT '比赛rating',
+  `contest_count` int(11) NOT NULL DEFAULT '0' COMMENT '计入rating的比赛次数',
+  `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
+  `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`uid`),
+  CONSTRAINT `user_contest_rating_ibfk_1` FOREIGN KEY (`uid`) REFERENCES `user_info` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*Table structure for table `user_contest_rating_history` */
+
+DROP TABLE IF EXISTS `user_contest_rating_history`;
+
+CREATE TABLE `user_contest_rating_history` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `uid` varchar(32) NOT NULL COMMENT '用户uuid',
+  `cid` bigint(20) unsigned NOT NULL COMMENT '比赛id',
+  `old_rating` int(11) NOT NULL,
+  `delta` int(11) NOT NULL,
+  `new_rating` int(11) NOT NULL,
+  `rank` int(11) DEFAULT NULL COMMENT '名次',
+  `participants` int(11) DEFAULT NULL COMMENT '参赛人数',
+  `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uid_cid_unique` (`uid`,`cid`),
+  KEY `uid` (`uid`),
+  KEY `cid` (`cid`),
+  CONSTRAINT `user_contest_rating_history_ibfk_1` FOREIGN KEY (`uid`) REFERENCES `user_info` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `user_contest_rating_history_ibfk_2` FOREIGN KEY (`cid`) REFERENCES `contest` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*Table structure for table `problem_difficulty_history` */
+
+DROP TABLE IF EXISTS `problem_difficulty_history`;
+
+CREATE TABLE `problem_difficulty_history` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `pid` bigint(20) unsigned NOT NULL COMMENT '题目id',
+  `month` varchar(7) NOT NULL COMMENT '月份 yyyy-MM',
+  `old_difficulty` int(11) NOT NULL,
+  `delta` int(11) NOT NULL,
+  `new_difficulty` int(11) NOT NULL,
+  `attempted_users` int(11) NOT NULL DEFAULT '0',
+  `accepted_users` int(11) NOT NULL DEFAULT '0',
+  `avg_attempts` double DEFAULT NULL,
+  `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `pid_month_unique` (`pid`,`month`),
+  KEY `pid` (`pid`),
+  CONSTRAINT `problem_difficulty_history_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `problem` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*Table structure for table `contest_rating_event` */
+
+DROP TABLE IF EXISTS `contest_rating_event`;
+
+CREATE TABLE `contest_rating_event` (
+  `cid` bigint(20) unsigned NOT NULL COMMENT '比赛id',
+  `processed` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否已处理',
+  `participants` int(11) DEFAULT NULL COMMENT '参赛人数',
+  `processed_time` datetime DEFAULT NULL COMMENT '处理时间',
+  `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP,
+  `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`cid`),
+  CONSTRAINT `contest_rating_event_ibfk_1` FOREIGN KEY (`cid`) REFERENCES `contest` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `problem_case` */
 

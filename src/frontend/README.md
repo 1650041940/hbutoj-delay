@@ -11,7 +11,7 @@ docker build -t hoj-frontend .
 或者直接下载本项目，进入到当前文件夹执行打包命令
 
 ```shell
-git clone https://gitee.com/himitzh0730/hoj-deploy.git && cd hoj-deploy/src/frontend
+git clone <YOUR_DEPLOY_REPO_URL> && cd <YOUR_DEPLOY_REPO_DIR>/src/frontend
 
 docker build -t hoj-frontend .
 ```
@@ -31,7 +31,7 @@ docker run 启动
   -p 80:80 \
   --restart="always" \
   hoj-frontend
-  # registry.cn-shenzhen.aliyuncs.com/hcode/hoj_frontend
+  # ghcr.io/1650041940/hbutoj_frontend:latest
   ```
 
 - Https方式
@@ -50,7 +50,7 @@ docker run 启动
   -p 443:443 \
   --restart="always" \
   hoj-frontend
-  # registry.cn-shenzhen.aliyuncs.com/hcode/hoj_frontend
+  # ghcr.io/1650041940/hbutoj_frontend:latest
   ```
 
 docker-compose 启动
@@ -59,7 +59,7 @@ docker-compose 启动
 version: "3"
 services:
   hoj-frontend:
-    # image: registry.cn-shenzhen.aliyuncs.com/hcode/hoj_frontend
+    # image: ghcr.io/1650041940/hbutoj_frontend:latest
     image: hoj-frontend
     container_name: hoj-frontend
     restart: always

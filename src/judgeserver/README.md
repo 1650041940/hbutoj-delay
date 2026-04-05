@@ -1,6 +1,8 @@
 ## 前言
 
-当前文件夹为打包`hoj-judgeserver`镜像的相关文件，将这些文件复制到同一个文件夹内，**然后打包[JudgeServer](https://gitee.com/himitzh0730/hoj/tree/master/hoj-springboot/JudgeServer)（SpringBoot项目）成jar包也放到当前文件夹**，之后执行以下命令进行打包成镜像.
+当前文件夹为打包判题端镜像（`hoj-judgeserver` 服务所用镜像）的构建上下文文件。
+
+你需要先在源码仓库中打包 JudgeServer（SpringBoot 模块）生成 jar，然后把 jar 放到当前目录，再执行构建。
 
 ```shell
 docker build -t hoj-judgeserver .
@@ -9,7 +11,7 @@ docker build -t hoj-judgeserver .
 或者直接下载本项目，进入到当前文件夹执行打包命令
 
 ```shell
-git clone https://gitee.com/himitzh0730/hoj-deploy.git && cd hoj-deploy/src/judgeserver
+git clone <YOUR_DEPLOY_REPO_URL> && cd <YOUR_DEPLOY_REPO_DIR>/src/judgeserver
 
 docker build -t hoj-judgeserver .
 ```
@@ -23,7 +25,7 @@ version: "3"
 services:
 
   hoj-judgeserver:
-#    image: registry.cn-shenzhen.aliyuncs.com/hcode/hoj_judgeserver
+#    image: ghcr.io/1650041940/hbutoj_judgeserver:latest
 	image: hoj-judgeserver
     container_name: hoj-judgeserver
     restart: always
