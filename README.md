@@ -38,7 +38,7 @@ cp -n standAlone/.env.example standAlone/.env
 - `HBUTOJ_IMAGE_PREFIX`：你的镜像仓库前缀（例如 `ghcr.io/<user>`）
 - `HBUTOJ_IMAGE_TAG`：通用版本号/标签（仍保留，但更推荐使用下面的“组件独立 tag”）
 - `HBUTOJ_BACKEND_IMAGE_TAG` / `HBUTOJ_FRONTEND_IMAGE_TAG` / `HBUTOJ_JUDGESERVER_IMAGE_TAG`：组件独立 tag（推荐，便于只更新单个服务）
-- `HBUTOJ_*_IMAGE`：镜像仓库名（repo name），你可以保持兼容（默认 `hoj_backend` 等），也可以改成你自己的命名（例如 `hbutoj_backend`）
+- `HBUTOJ_*_IMAGE`：镜像仓库名（repo name），推荐保持与本项目一致（默认 `hbutoj_backend` 等），也可以改成你自己的命名
 
 分布式部署对应：
 
@@ -68,7 +68,7 @@ export HBUTOJ_IMAGE_TAG=v1.0.0
 ./tools/hbutoj_build_and_push.sh
 ```
 
-说明：部署侧 `standAlone/docker-compose.yml` 默认包含 `hoj-mysql-checker`（一次性 SQL 检查/更新容器）。
+说明：部署侧 `standAlone/docker-compose.yml` 默认包含 `hbutoj-mysql-checker`（一次性 SQL 检查/更新容器）。
 为了保证你在部署侧只需要 `docker compose pull && docker compose up -d` 就能更新，源码侧发布镜像时也应当包含：
 
 - `hbutoj_backend`
@@ -105,7 +105,7 @@ export HBUTOJ_MYSQL_IMAGE=hbutoj_database
 
 ### 2.1) 只发布 judgeserver（热修推荐）
 
-当你只改了判题端（例如语言配置）时，只发布 `hoj-judgeserver` 更快、更稳。
+当你只改了判题端（例如语言配置）时，只发布 `hbutoj-judgeserver` 更快、更稳。
 
 在源码仓库编译 `JudgeServer`：
 
@@ -141,8 +141,8 @@ docker push "$HBUTOJ_IMAGE_PREFIX/$HBUTOJ_JUDGESERVER_IMAGE:$HBUTOJ_IMAGE_TAG"
 ```bash
 cd /root/services/hbutoj_deplay/standAlone
 sed -i 's/^HBUTOJ_IMAGE_TAG=.*/HBUTOJ_IMAGE_TAG=v1.0.1/' .env
-docker compose pull hoj-judgeserver
-docker compose up -d hoj-judgeserver
+docker compose pull hbutoj-judgeserver
+docker compose up -d hbutoj-judgeserver
 ```
 
 注意：推送前需先 `docker login` 到你的镜像仓库。
@@ -174,7 +174,7 @@ docker compose pull
 docker compose up -d
 ```
 
-注意：`standAlone/docker-compose.yml` 里包含一个一次性任务容器 `hoj-mysql-checker`（用于检查/执行 SQL 更新）。
+注意：`standAlone/docker-compose.yml` 里包含一个一次性任务容器 `hbutoj-mysql-checker`（用于检查/执行 SQL 更新）。
 
 - 如果你看到类似报错：`.../hoj_database_checker:latest: not found`，通常是 `standAlone/.env` 里把 `HBUTOJ_MYSQL_CHECKER_IMAGE` 配错了。
    - 正确值应为：`HBUTOJ_MYSQL_CHECKER_IMAGE=hbutoj_database_checker`
@@ -454,14 +454,14 @@ Windows 下的安装仅供体验，勿在生产环境使用。如有必要，请
 
 - 单机：
 
-  提供server.crt和server.key证书与密钥文件放置`/standAlone`目录下，与`docker-compose.yml`和`.env`文件放置同一位置，然后修改`docker-compose.yml`中的hoj-frontend的配置
+   提供server.crt和server.key证书与密钥文件放置`/standAlone`目录下，与`docker-compose.yml`和`.env`文件放置同一位置，然后修改`docker-compose.yml`中的hbutoj-frontend的配置
 
-- 分布式：提供server.crt和server.key证书与密钥文件放置`/distributed/main目录下，与`docker-compose.yml`和`.env`文件放置同一位置，然后修改`docker-compose.yml`中的hoj-frontend的配置
+- 分布式：提供server.crt和server.key证书与密钥文件放置`/distributed/main目录下，与`docker-compose.yml`和`.env`文件放置同一位置，然后修改`docker-compose.yml`中的hbutoj-frontend的配置
 
 ```yaml
-hoj-frontend:
+hbutoj-frontend:
    image: ${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}/${HBUTOJ_FRONTEND_IMAGE:-hbutoj_frontend}:${HBUTOJ_FRONTEND_IMAGE_TAG:-latest}
-    container_name: hoj-frontend
+   container_name: hbutoj-frontend
     restart: always
     # 开启https，请提供证书
     volumes:
@@ -476,7 +476,7 @@ hoj-frontend:
       - "80:80"
       - "443:443"
     networks:
-      hoj-network:
+         hbutoj-network:
         ipv4_address: 172.20.0.6
 ```
 

@@ -1,8 +1,8 @@
 version: "3"
 services:
-  hoj-redis:
+  hbutoj-redis:
     image: redis:5.0.9-alpine
-    container_name: hoj-redis
+    container_name: hbutoj-redis
     restart: always
     deploy:
       resources:
@@ -10,9 +10,9 @@ services:
           memory: ${REDIS_MEM_LIMIT:-96M}
     mem_limit: ${REDIS_MEM_LIMIT:-96M}
     volumes:
-      - ${HOJ_DATA_DIRECTORY}/data/redis/data:/data
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/data/redis/data:/data
     networks:
-      hoj-network:
+      hbutoj-network:
         ipv4_address: ${REDIS_HOST:-172.20.0.2}
     ports:
       - ${REDIS_PORT:-6379}:6379
@@ -24,12 +24,12 @@ services:
       timeout: 10s
       retries: 10
 
-  hoj-mysql:
+  hbutoj-mysql:
     #仅支持amd64
     image: ${HBUTOJ_MYSQL_IMAGE_FULL:-${HBUTOJ_MYSQL_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}}/${HBUTOJ_MYSQL_IMAGE:-hbutoj_database}:${HBUTOJ_MYSQL_IMAGE_TAG:-latest}}
     #支持amd64、arm64
     #image: himitzh/hbutoj_database
-    container_name: hoj-mysql
+    container_name: hbutoj-mysql
     restart: always
     deploy:
       resources:
@@ -37,7 +37,7 @@ services:
           memory: ${MYSQL_MEM_LIMIT:-512M}
     mem_limit: ${MYSQL_MEM_LIMIT:-512M}
     volumes:
-      - ${HOJ_DATA_DIRECTORY}/data/mysql/data:/var/lib/mysql
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/data/mysql/data:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-hoj123456} # mysql数据库root账号的密码
       - TZ=Asia/Shanghai
@@ -46,7 +46,7 @@ services:
     ports:
       - ${MYSQL_PUBLIC_PORT:-3306}:3306
     networks:
-      hoj-network:
+      hbutoj-network:
         ipv4_address: ${MYSQL_HOST:-172.20.0.3}
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-hoj123456}"]
@@ -54,14 +54,14 @@ services:
       timeout: 10s
       retries: 10
 
-  hoj-nacos:
+  hbutoj-nacos:
     image: nacos/nacos-server:1.4.2
     #支持arm64
     #image: centralx/nacos-server:1.4.2
-    container_name: hoj-nacos
+    container_name: hbutoj-nacos
     restart: always
     depends_on:
-      hoj-mysql:
+      hbutoj-mysql:
         condition: service_healthy
     environment:
       - JVM_XMX=${NACOS_JVM_XMX:-256m}
@@ -83,7 +83,7 @@ services:
       timeout: 10s
       retries: 12
     networks:
-      hoj-network:
+      hbutoj-network:
         ipv4_address: ${NACOS_HOST:-172.20.0.4}
     deploy:
       resources:
@@ -91,12 +91,12 @@ services:
           memory: ${NACOS_MEM_LIMIT:-320M}
     mem_limit: ${NACOS_MEM_LIMIT:-320M}
 
-  hoj-backend:
+  hbutoj-backend:
     #仅支持amd64
     image: ${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}/${HBUTOJ_BACKEND_IMAGE:-hbutoj_backend}:${HBUTOJ_BACKEND_IMAGE_TAG:-latest}
     #支持amd64、arm64
     #image: himitzh/hoj_backend
-    container_name: hoj-backend
+    container_name: hbutoj-backend
     restart: always
     deploy:
       resources:
@@ -104,16 +104,16 @@ services:
           memory: ${BACKEND_MEM_LIMIT:-512M}
     mem_limit: ${BACKEND_MEM_LIMIT:-512M}
     depends_on:
-      hoj-redis:
+      hbutoj-redis:
         condition: service_healthy
-      hoj-mysql:
+      hbutoj-mysql:
         condition: service_healthy
-      hoj-nacos:
+      hbutoj-nacos:
         condition: service_started
     volumes:
-      - ${HOJ_DATA_DIRECTORY}/file:/hoj/file
-      - ${HOJ_DATA_DIRECTORY}/testcase:/hoj/testcase
-      - ${HOJ_DATA_DIRECTORY}/log/backend:/hoj/log/backend
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/file:/hoj/file
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/testcase:/hoj/testcase
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/log/backend:/hoj/log/backend
     environment:
       - TZ=Asia/Shanghai
       - JAVA_OPTS=${BACKEND_JAVA_OPTS:--Xms128m -Xmx320m}
@@ -160,15 +160,15 @@ services:
     ports:
       - ${BACKEND_PORT:-6688}:${BACKEND_PORT:-6688}
     networks:
-      hoj-network:
+      hbutoj-network:
         ipv4_address: ${BACKEND_HOST:-172.20.0.5}
 
-  hoj-frontend:
+  hbutoj-frontend:
     #仅支持amd64
     image: ${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}/${HBUTOJ_FRONTEND_IMAGE:-hbutoj_frontend}:${HBUTOJ_FRONTEND_IMAGE_TAG:-latest}
     #支持amd64、arm64
     #image: himitzh/hoj_frontend
-    container_name: hoj-frontend
+    container_name: hbutoj-frontend
     restart: always
     deploy:
       resources:
@@ -191,15 +191,15 @@ services:
       - "80:80"
       - "443:443"
     networks:
-      hoj-network:
+      hbutoj-network:
         ipv4_address: 172.20.0.6
 
-  hoj-judgeserver:
+  hbutoj-judgeserver:
     #仅支持amd64
     image: ${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}/${HBUTOJ_JUDGESERVER_IMAGE:-hbutoj_judgeserver}:${HBUTOJ_JUDGESERVER_IMAGE_TAG:-latest}
     #支持amd64、arm64
     #image: himitzh/hoj_judgeserver
-    container_name: hoj-judgeserver
+    container_name: hbutoj-judgeserver
     restart: always
     deploy:
       resources:
@@ -207,17 +207,17 @@ services:
           memory: ${JUDGESERVER_MEM_LIMIT:-512M}
     mem_limit: ${JUDGESERVER_MEM_LIMIT:-512M}
     depends_on:
-      hoj-mysql:
+      hbutoj-mysql:
         condition: service_healthy
-      hoj-nacos:
+      hbutoj-nacos:
         condition: service_healthy
     volumes:
-      - ${HOJ_DATA_DIRECTORY}/testcase:/judge/test_case
-      - ${HOJ_DATA_DIRECTORY}/judge/log:/judge/log
-      - ${HOJ_DATA_DIRECTORY}/judge/run:/judge/run
-      - ${HOJ_DATA_DIRECTORY}/judge/spj:/judge/spj
-      - ${HOJ_DATA_DIRECTORY}/judge/interactive:/judge/interactive
-      - ${HOJ_DATA_DIRECTORY}/log/judgeserver:/judge/log/judgeserver
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/testcase:/judge/test_case
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/judge/log:/judge/log
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/judge/run:/judge/run
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/judge/spj:/judge/spj
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/judge/interactive:/judge/interactive
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/log/judgeserver:/judge/log/judgeserver
     environment:
       - TZ=Asia/Shanghai
       - JAVA_OPTS=${JUDGESERVER_JAVA_OPTS:--Xms128m -Xmx320m} # 修正JVM参数以便适应单机部署
@@ -247,34 +247,34 @@ services:
     privileged: true # 设置容器的权限为root
     shm_size: 512mb
     networks:
-      hoj-network:
+      hbutoj-network:
         ipv4_address: 172.20.0.7
 
-  hoj-mysql-checker:
+  hbutoj-mysql-checker:
     #仅支持amd64
     image: ${HBUTOJ_MYSQL_CHECKER_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}}/${HBUTOJ_MYSQL_CHECKER_IMAGE:-hbutoj_database_checker}:${HBUTOJ_MYSQL_CHECKER_IMAGE_TAG:-latest}
     #支持amd64、arm64
     #image: himitzh/hoj_database_checker
-    container_name: hoj-mysql-checker
+    container_name: hbutoj-mysql-checker
     deploy:
       resources:
         limits:
           memory: ${MYSQL_CHECKER_MEM_LIMIT:-128M}
     mem_limit: ${MYSQL_CHECKER_MEM_LIMIT:-128M}
     depends_on:
-      hoj-mysql:
+      hbutoj-mysql:
         condition: service_healthy
     links:
-      - hoj-mysql:mysql
+      - hbutoj-mysql:mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-hoj123456}
     networks:
-      hoj-network:
+      hbutoj-network:
         ipv4_address: 172.20.0.8
 
-  hoj-autohealth: # 监控不健康的容器进行重启
+  hbutoj-autohealth: # 监控不健康的容器进行重启
     restart: always
-    container_name: hoj-autohealth
+    container_name: hbutoj-autohealth
     image: willfarrell/autoheal
     deploy:
       resources:
@@ -287,7 +287,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
 networks:
-  hoj-network:
+  hbutoj-network:
     driver: bridge
     ipam:
       config:

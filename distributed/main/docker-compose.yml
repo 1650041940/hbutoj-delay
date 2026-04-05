@@ -1,8 +1,8 @@
 services:
 
-  hoj-redis:
+  hbutoj-redis:
     image: redis:5.0.9-alpine
-    container_name: hoj-redis
+    container_name: hbutoj-redis
     restart: always
     deploy:
       resources:
@@ -10,21 +10,21 @@ services:
           memory: ${REDIS_MEM_LIMIT:-96M}
     mem_limit: ${REDIS_MEM_LIMIT:-96M}
     volumes:
-      - ${HOJ_DATA_DIRECTORY}/data/redis/data:/data
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/data/redis/data:/data
     networks:
-      hoj-network:
+      hbutoj-network:
         ipv4_address: ${REDIS_HOST:-172.20.0.2}
     ports:
       - ${REDIS_PORT:-6379}:6379
     # --requirepass 后面为redis访问密码
     command: redis-server --requirepass ${REDIS_PASSWORD:-hoj123456} --appendonly yes
         
-  hoj-mysql:
+  hbutoj-mysql:
     #仅支持amd64
     image: ${HBUTOJ_MYSQL_IMAGE_FULL:-${HBUTOJ_MYSQL_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}}/${HBUTOJ_MYSQL_IMAGE:-hbutoj_database}:${HBUTOJ_IMAGE_TAG:-latest}}
     #支持amd64、arm64
     #image: ghcr.io/1650041940/hbutoj_database:latest
-    container_name: hoj-mysql
+    container_name: hbutoj-mysql
     restart: always
     deploy:
       resources:
@@ -32,7 +32,7 @@ services:
           memory: ${MYSQL_MEM_LIMIT:-512M}
     mem_limit: ${MYSQL_MEM_LIMIT:-512M}
     volumes:
-      - ${HOJ_DATA_DIRECTORY}/data/mysql/data:/var/lib/mysql
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/data/mysql/data:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-hoj123456} # mysql数据库root账号的密码
       - TZ=Asia/Shanghai
@@ -41,14 +41,14 @@ services:
     ports:
       - ${MYSQL_PUBLIC_PORT:-3306}:3306
     networks:
-      hoj-network:
+      hbutoj-network:
         ipv4_address: ${MYSQL_HOST:-172.20.0.3}
       
-  hoj-nacos:
+  hbutoj-nacos:
     image: nacos/nacos-server:1.4.2
     #支持arm64
     #image: centralx/nacos-server:1.4.2
-    container_name: hoj-nacos
+    container_name: hbutoj-nacos
     restart: always
     deploy:
       resources:
@@ -56,7 +56,7 @@ services:
           memory: ${NACOS_MEM_LIMIT:-320M}
     mem_limit: ${NACOS_MEM_LIMIT:-320M}
     depends_on: 
-      - hoj-mysql
+      - hbutoj-mysql
     environment:
       - JVM_XMX=${NACOS_JVM_XMX:-256m}
       - JVM_XMS=${NACOS_JVM_XMS:-256m}
@@ -77,15 +77,15 @@ services:
       timeout: 10s
       retries: 10
     networks:
-      hoj-network:
+      hbutoj-network:
         ipv4_address: ${NACOS_HOST:-172.20.0.4}
     
-  hoj-backend:
+  hbutoj-backend:
     #仅支持amd64
     image: ${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}/${HBUTOJ_BACKEND_IMAGE:-hbutoj_backend}:${HBUTOJ_IMAGE_TAG:-latest}
     #支持amd64、arm64
     #image: ghcr.io/1650041940/hbutoj_backend:latest
-    container_name: hoj-backend
+    container_name: hbutoj-backend
     restart: always
     deploy:
       resources:
@@ -93,13 +93,13 @@ services:
           memory: ${BACKEND_MEM_LIMIT:-512M}
     mem_limit: ${BACKEND_MEM_LIMIT:-512M}
     depends_on:
-      - hoj-redis
-      - hoj-mysql
-      - hoj-nacos
+      - hbutoj-redis
+      - hbutoj-mysql
+      - hbutoj-nacos
     volumes:
-      - ${HOJ_DATA_DIRECTORY}/file:/hoj/file
-      - ${HOJ_DATA_DIRECTORY}/testcase:/hoj/testcase
-      - ${HOJ_DATA_DIRECTORY}/log/backend:/hoj/log/backend
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/file:/hoj/file
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/testcase:/hoj/testcase
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/log/backend:/hoj/log/backend
     environment:
       - TZ=Asia/Shanghai
       - JAVA_OPTS=${BACKEND_JAVA_OPTS:--Xms128m -Xmx320m}
@@ -146,15 +146,15 @@ services:
     ports:
       - ${BACKEND_PORT:-6688}:${BACKEND_PORT:-6688}
     networks:
-      hoj-network:
+      hbutoj-network:
         ipv4_address: ${BACKEND_HOST:-172.20.0.5}
   
-  hoj-frontend:
+  hbutoj-frontend:
     #仅支持amd64
     image: ${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}/${HBUTOJ_FRONTEND_IMAGE:-hbutoj_frontend}:${HBUTOJ_IMAGE_TAG:-latest}
     #支持amd64、arm64
     #image: ghcr.io/1650041940/hbutoj_frontend:latest
-    container_name: hoj-frontend
+    container_name: hbutoj-frontend
     restart: always
     deploy:
       resources:
@@ -177,22 +177,22 @@ services:
       - "80:80"
       - "443:443"
     networks:
-      hoj-network:
+      hbutoj-network:
         ipv4_address: 172.20.0.6 
 
-  hoj-rsync-master:
+  hbutoj-rsync-master:
     #仅支持amd64
     image: ${HBUTOJ_RSYNC_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}}/${HBUTOJ_RSYNC_IMAGE:-hbutoj_rsync}:${HBUTOJ_RSYNC_IMAGE_TAG:-latest}
     #支持amd64、arm64
     #image: ghcr.io/1650041940/hbutoj_rsync:latest
-    container_name: hoj-rsync-master
+    container_name: hbutoj-rsync-master
     deploy:
       resources:
         limits:
           memory: ${RSYNC_MEM_LIMIT:-64M}
     mem_limit: ${RSYNC_MEM_LIMIT:-64M}
     volumes:
-      - ${HOJ_DATA_DIRECTORY}/testcase:/hoj/testcase:ro
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/testcase:/hoj/testcase:ro
     environment:
       - RSYNC_MODE=master
       - RSYNC_USER=hojrsync 
@@ -200,30 +200,30 @@ services:
     ports:
       - "0.0.0.0:873:873"
 
-  hoj-mysql-checker:
+  hbutoj-mysql-checker:
     #仅支持amd64
     image: ${HBUTOJ_MYSQL_CHECKER_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}}/${HBUTOJ_MYSQL_CHECKER_IMAGE:-hbutoj_database_checker}:${HBUTOJ_IMAGE_TAG:-latest}
     #支持amd64、arm64
     #image: ghcr.io/1650041940/hbutoj_database_checker:latest
-    container_name: hoj-mysql-checker
+    container_name: hbutoj-mysql-checker
     deploy:
       resources:
         limits:
           memory: ${MYSQL_CHECKER_MEM_LIMIT:-128M}
     mem_limit: ${MYSQL_CHECKER_MEM_LIMIT:-128M}
     depends_on:
-      - hoj-mysql
+      - hbutoj-mysql
     links:
-      - hoj-mysql:mysql
+      - hbutoj-mysql:mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-hoj123456}
     networks:
-      hoj-network:
+      hbutoj-network:
         ipv4_address: 172.20.0.7
 
-  hoj-autohealth:  # 监控不健康的容器进行重启
+  hbutoj-autohealth:  # 监控不健康的容器进行重启
     restart: always
-    container_name: hoj-autohealth
+    container_name: hbutoj-autohealth
     image: willfarrell/autoheal
     deploy:
       resources:
@@ -235,7 +235,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock      
 networks:
-   hoj-network:
+   hbutoj-network:
      driver: bridge
      ipam:
        config:

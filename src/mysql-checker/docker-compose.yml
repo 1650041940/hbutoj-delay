@@ -1,9 +1,9 @@
 services:
 
         
-  hoj-mysql:
+  hbutoj-mysql:
     image: ${HBUTOJ_MYSQL_IMAGE_FULL:-${HBUTOJ_MYSQL_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}}/${HBUTOJ_MYSQL_IMAGE:-hbutoj_database}:${HBUTOJ_IMAGE_TAG:-latest}}
-    container_name: hoj-mysql
+    container_name: hbutoj-mysql
     restart: always
     deploy:
       resources:
@@ -11,7 +11,7 @@ services:
           memory: ${MYSQL_CHECKER_MYSQL_MEM_LIMIT:-512M}
     mem_limit: ${MYSQL_CHECKER_MYSQL_MEM_LIMIT:-512M}
     volumes:
-      - ./hoj/data/mysql/data:/var/lib/mysql
+      - ./hbutoj/data/mysql/data:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-hoj123456} # mysql数据库root账号的密码
       - TZ=Asia/Shanghai
@@ -25,17 +25,17 @@ services:
       timeout: 20s
       retries: 10
   
-  hoj-mysql-checker:
+  hbutoj-mysql-checker:
     image: ${HBUTOJ_MYSQL_CHECKER_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}}/${HBUTOJ_MYSQL_CHECKER_IMAGE:-hbutoj_database_checker}:${HBUTOJ_IMAGE_TAG:-latest}
-    container_name: hoj-mysql-checker
+    container_name: hbutoj-mysql-checker
     deploy:
       resources:
         limits:
           memory: ${MYSQL_CHECKER_CHECKER_MEM_LIMIT:-128M}
     mem_limit: ${MYSQL_CHECKER_CHECKER_MEM_LIMIT:-128M}
     depends_on:
-      - hoj-mysql
+      - hbutoj-mysql
     links:
-      - hoj-mysql:mysql
+      - hbutoj-mysql:mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-hoj123456}

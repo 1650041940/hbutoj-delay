@@ -1,11 +1,11 @@
 ## 前言
 
-当前文件夹为打包判题端镜像（`hoj-judgeserver` 服务所用镜像）的构建上下文文件。
+当前文件夹为打包判题端镜像（`hbutoj-judgeserver` 服务所用镜像）的构建上下文文件。
 
 你需要先在源码仓库中打包 JudgeServer（SpringBoot 模块）生成 jar，然后把 jar 放到当前目录，再执行构建。
 
 ```shell
-docker build -t hoj-judgeserver .
+docker build -t hbutoj-judgeserver .
 ```
 
 或者直接下载本项目，进入到当前文件夹执行打包命令
@@ -13,7 +13,7 @@ docker build -t hoj-judgeserver .
 ```shell
 git clone <YOUR_DEPLOY_REPO_URL> && cd <YOUR_DEPLOY_REPO_DIR>/src/judgeserver
 
-docker build -t hoj-judgeserver .
+docker build -t hbutoj-judgeserver .
 ```
 
 
@@ -24,10 +24,10 @@ docker-compose 启动
 version: "3"
 services:
 
-  hoj-judgeserver:
+  hbutoj-judgeserver:
 #    image: ghcr.io/1650041940/hbutoj_judgeserver:latest
-	image: hoj-judgeserver
-    container_name: hoj-judgeserver
+	image: hbutoj-judgeserver
+    container_name: hbutoj-judgeserver
     restart: always
     volumes:
       - ./judge/test_case:/judge/test_case
@@ -36,11 +36,11 @@ services:
       - ./judge/spj:/judge/spj
       - ./judge/log/judgeserver:/judge/log/judgeserver
     environment:
-      - TZ=Asia:/Shanghai
+      - TZ=Asia/Shanghai
       - PARALLEL_TASK=default # 默认沙盒并行判题数为cpu核心数
       - JUDGE_SERVER_IP=your_judgeserver_ip # 判题服务所在的ip
       - JUDGE_SERVER_PORT=8088 # 判题服务启动的端口号
-      - JUDGE_SERVER_NAME=hoj-judger-1 # 判题服务名字，多个判题服务请使用不同
+      - JUDGE_SERVER_NAME=hbutoj-judger-1 # 判题服务名字，多个判题服务请使用不同
       - NACOS_URL=172.20.0.4:8848 # nacos的url
       - NACOS_USERNAME=nacos # nacos的管理员账号
       - NACOS_PASSWORD=nacos # naocs的管理员账号密码

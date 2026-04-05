@@ -1,11 +1,11 @@
 ## 前言
 
-> html文件夹下为hoj的vue前端打包的静态资源
+> html 文件夹下为 HBUTOJ 的 Vue 前端打包静态资源
 
-当前文件夹为打包`hoj-frontend`镜像的相关文件，将这些文件复制到同一个文件夹内，之后执行以下命令进行打包成镜像
+当前文件夹为打包 `hbutoj-frontend` 镜像的相关文件，将这些文件复制到同一个文件夹内，之后执行以下命令进行打包成镜像
 
 ```shell
-docker build -t hoj-frontend .
+docker build -t hbutoj-frontend .
 ```
 
 或者直接下载本项目，进入到当前文件夹执行打包命令
@@ -13,7 +13,7 @@ docker build -t hoj-frontend .
 ```shell
 git clone <YOUR_DEPLOY_REPO_URL> && cd <YOUR_DEPLOY_REPO_DIR>/src/frontend
 
-docker build -t hoj-frontend .
+docker build -t hbutoj-frontend .
 ```
 
 
@@ -23,23 +23,23 @@ docker run 启动
 - Http方式
 
   ```shell
-  docker run -d --name hoj-frontend \
+  docker run -d --name hbutoj-frontend \
   -e SERVER_NAME=localhost \
   -e BACKEND_SERVER_HOST=backend_server_host \
   -e BACKEND_SERVER_PORT=backend_server_port \
   -e USE_HTTPS=false \
   -p 80:80 \
   --restart="always" \
-  hoj-frontend
+  hbutoj-frontend
   # ghcr.io/1650041940/hbutoj_frontend:latest
   ```
 
 - Https方式
 
-  **需将SSL证书与公钥文件（server.crt、server.kry）放置当前目录** 
+  **需将 SSL 证书与密钥文件（server.crt、server.key）放置当前目录**
 
   ```shell
-  docker run -d --name hoj-frontend \
+  docker run -d --name hbutoj-frontend \
   -e SERVER_NAME=localhost \
   -e BACKEND_SERVER_HOST=backend_server_host \
   -e BACKEND_SERVER_PORT=backend_server_port \
@@ -49,7 +49,7 @@ docker run 启动
   -p 80:80 \
   -p 443:443 \
   --restart="always" \
-  hoj-frontend
+  hbutoj-frontend
   # ghcr.io/1650041940/hbutoj_frontend:latest
   ```
 
@@ -58,10 +58,10 @@ docker-compose 启动
 ```yaml
 version: "3"
 services:
-  hoj-frontend:
+  hbutoj-frontend:
     # image: ghcr.io/1650041940/hbutoj_frontend:latest
-    image: hoj-frontend
-    container_name: hoj-frontend
+    image: hbutoj-frontend
+    container_name: hbutoj-frontend
     restart: always
     # 开启https，请提供证书
     #volumes:
@@ -76,7 +76,7 @@ services:
       - "80:80"
       - "443:443"
 #    networks:
-#      hoj-network:
+#      hbutoj-network:
 #        ipv4_address: 172.20.0.6
 ```
 

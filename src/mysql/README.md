@@ -1,30 +1,31 @@
 ## 前言
 
-当前文件夹为打包`hoj-mysql`镜像的相关文件，只需将这些文件复制到同一个文件夹内，之后执行以下命令进行打包成镜像。
+当前文件夹为打包数据库镜像（`hbutoj_database`，服务名/容器名通常为 `hbutoj-mysql`）的相关文件。
 
 ```shell
-docker build -t hoj-mysql .
+docker build -t hbutoj_database .
 ```
 
 或者直接下载本项目，进入到当前文件夹执行打包命令
 
 ```shell
 git clone <YOUR_DEPLOY_REPO_URL> && cd <YOUR_DEPLOY_REPO_DIR>/src/mysql
-docker build -t hoj-mysql .
+docker build -t hbutoj_database .
+
 ```
 
 docker run启动
 
 ```shell
-docker run -d --name hoj-mysql \
--v ./hoj/data/mysql/data:/var/lib/mysql \
+docker run -d --name hbutoj-mysql \
+-v ./hbutoj/data/mysql/data:/var/lib/mysql \
 -e MYSQL_ROOT_PASSWORD="hoj123456" \
 -e TZ="Asia/Shanghai" \
 -e NACOS_USERNAME=root \
 -e NACOS_PASSWORD=hoj123456 \
 -p 3306:3306 \
 --restart="always" \
-hoj-mysql
+hbutoj_database
 # ghcr.io/1650041940/hbutoj_database:latest
 ```
 
@@ -35,13 +36,14 @@ docker-compose 启动
 ```shell
 version: "3"
 services:
-  hoj-mysql:
+
+	hbutoj-mysql:
 	#image: ghcr.io/1650041940/hbutoj_database:latest
-    image: hoj-mysql
-    container_name: hoj-mysql
+		image: hbutoj_database
+		container_name: hbutoj-mysql
     restart: always
     volumes:
-      - ./hoj/data/mysql/data:/var/lib/mysql
+			- ./hbutoj/data/mysql/data:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=hoj123456 # root账号的密码
       - TZ=Asia/Shanghai
@@ -51,7 +53,7 @@ services:
       - "3306:3306"
 #  如果有自定义网络可以类似添加如下
 #    networks:
-#      hoj-network:
+#      hbutoj-network:
 #        ipv4_address: 172.20.0.3
 ```
 

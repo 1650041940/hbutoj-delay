@@ -1,11 +1,11 @@
 services:
 
-  hoj-judgeserver:
+  hbutoj-judgeserver:
     #仅支持amd64
     image: ${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}/${HBUTOJ_JUDGESERVER_IMAGE:-hbutoj_judgeserver}:${HBUTOJ_IMAGE_TAG:-latest}
     #支持amd64、arm64
     #image: ghcr.io/1650041940/hbutoj_judgeserver:latest
-    container_name: hoj-judgeserver
+    container_name: hbutoj-judgeserver
     restart: always
     deploy:
       resources:
@@ -13,12 +13,12 @@ services:
           memory: ${JUDGESERVER_MEM_LIMIT:-512M}
     mem_limit: ${JUDGESERVER_MEM_LIMIT:-512M}
     volumes:
-      - ${HOJ_JUDGESERVER_DATA_DIRECTORY}/test_case:/judge/test_case
-      - ${HOJ_JUDGESERVER_DATA_DIRECTORY}/log:/judge/log
-      - ${HOJ_JUDGESERVER_DATA_DIRECTORY}/run:/judge/run
-      - ${HOJ_JUDGESERVER_DATA_DIRECTORY}/spj:/judge/spj
-      - ${HOJ_JUDGESERVER_DATA_DIRECTORY}/interactive:/judge/interactive
-      - ${HOJ_JUDGESERVER_DATA_DIRECTORY}/log/judgeserver:/judge/log/judgeserver
+      - ${HBUTOJ_JUDGESERVER_DATA_DIRECTORY:-${HOJ_JUDGESERVER_DATA_DIRECTORY}}/test_case:/judge/test_case
+      - ${HBUTOJ_JUDGESERVER_DATA_DIRECTORY:-${HOJ_JUDGESERVER_DATA_DIRECTORY}}/log:/judge/log
+      - ${HBUTOJ_JUDGESERVER_DATA_DIRECTORY:-${HOJ_JUDGESERVER_DATA_DIRECTORY}}/run:/judge/run
+      - ${HBUTOJ_JUDGESERVER_DATA_DIRECTORY:-${HOJ_JUDGESERVER_DATA_DIRECTORY}}/spj:/judge/spj
+      - ${HBUTOJ_JUDGESERVER_DATA_DIRECTORY:-${HOJ_JUDGESERVER_DATA_DIRECTORY}}/interactive:/judge/interactive
+      - ${HBUTOJ_JUDGESERVER_DATA_DIRECTORY:-${HOJ_JUDGESERVER_DATA_DIRECTORY}}/log/judgeserver:/judge/log/judgeserver
     environment:
       - TZ=Asia/Shanghai
       - JAVA_OPTS=${JUDGESERVER_JAVA_OPTS:--Xms128m -Xmx320m}
@@ -43,12 +43,12 @@ services:
     shm_size: 512mb
     privileged: true # 设置容器的权限为root
 
-  hoj-rsync-slave:
+  hbutoj-rsync-slave:
     #仅支持amd64
     image: ${HBUTOJ_RSYNC_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}}/${HBUTOJ_RSYNC_IMAGE:-hbutoj_rsync}:${HBUTOJ_RSYNC_IMAGE_TAG:-latest}
     #支持amd64、arm64
     #image: ghcr.io/1650041940/hbutoj_rsync:latest
-    container_name: hoj-rsync-slave
+    container_name: hbutoj-rsync-slave
     restart: always
     deploy:
       resources:
@@ -56,8 +56,8 @@ services:
           memory: ${RSYNC_MEM_LIMIT:-64M}
     mem_limit: ${RSYNC_MEM_LIMIT:-64M}
     volumes:
-      - ${HOJ_JUDGESERVER_DATA_DIRECTORY}/test_case:/hoj/testcase
-      - ${HOJ_JUDGESERVER_DATA_DIRECTORY}/log:/hoj/log
+      - ${HBUTOJ_JUDGESERVER_DATA_DIRECTORY:-${HOJ_JUDGESERVER_DATA_DIRECTORY}}/test_case:/hoj/testcase
+      - ${HBUTOJ_JUDGESERVER_DATA_DIRECTORY:-${HOJ_JUDGESERVER_DATA_DIRECTORY}}/log:/hoj/log
     environment:
       - RSYNC_MODE=slave # 当前为slave从服务
       - RSYNC_USER=hojrsync # 与主服务器的rsync的用户一致

@@ -1,11 +1,11 @@
 ## 前言
 
-当前文件夹为打包后端镜像（`hoj-backend` 服务所用镜像）的构建上下文文件。
+当前文件夹为打包后端镜像（`hbutoj-backend` 服务所用镜像）的构建上下文文件。
 
 你需要先在源码仓库中打包 DataBackup（SpringBoot 模块）生成 jar，然后把 jar 放到当前目录，再执行构建。
 
 ```shell
-docker build -t hoj-backend .
+docker build -t hbutoj-backend .
 ```
 
 或者直接下载本项目，进入到当前文件夹执行打包命令
@@ -13,54 +13,54 @@ docker build -t hoj-backend .
 ```shell
 git clone <YOUR_DEPLOY_REPO_URL> && cd <YOUR_DEPLOY_REPO_DIR>/src/backend
 
-docker build -t hoj-backend .
+docker build -t hbutoj-backend .
 ```
 
 
 
-**项目依赖于hoj-redis，hoj-nacos，hoj-mysql等镜像成功启动，以及根据前面三个镜像的配置修改环境参数才可正常启动**
+**项目依赖于 hbutoj-redis、hbutoj-nacos、hbutoj-mysql 等服务成功启动，以及根据前面三个服务的配置修改环境参数才可正常启动**
 
 docker-compose 启动
 
 ```yaml
 version: "3"
 services:
-  hoj-backend:
+  hbutoj-backend:
 #    image: ghcr.io/1650041940/hbutoj_backend:latest
-	image: hoj-backend
-    container_name: hoj-backend
+	image: hbutoj-backend
+    container_name: hbutoj-backend
     restart: always
     depends_on:
-      - hoj-redis
-      - hoj-mysql
-      - hoj-nacos
+      - hbutoj-redis
+      - hbutoj-mysql
+      - hbutoj-nacos
     volumes:
-      - ./hoj/file:/hoj/file
-      - ./hoj/testcase:/hoj/testcase
-      - ./hoj/log/backend:/hoj/log/backend
+      - ./hbutoj/file:/hoj/file
+      - ./hbutoj/testcase:/hoj/testcase
+      - ./hbutoj/log/backend:/hoj/log/backend
     environment:
       - TZ=Asia/Shanghai
       - BACKEND_SERVER_PORT=6688 # backend服务端口号
-      - NACOS_URL=172.20.0.4:8848 # hoj-nacos的url
+      - NACOS_URL=172.20.0.4:8848 # hbutoj-nacos 的 url
       - NACOS_USERNAME=root # nacos的管理员账号
       - NACOS_PASSWORD=hoj123456 # nacos的管理员密码
       - JWT_TOKEN_SECRET=default # 加密秘钥 默认则生成32位随机密钥
       - JWT_TOKEN_EXPIRE=86400 # token过期时间默认为24小时 86400s
       - JWT_TOKEN_FRESH_EXPIRE=43200 # token默认12小时可自动刷新
       - JUDGE_TOKEN=default # 调用判题服务器的token 默认则生成32位随机密钥
-      - MYSQL_HOST=172.20.0.3 # hoj-mysql的host
+      - MYSQL_HOST=172.20.0.3 # hbutoj-mysql 的 host
       - MYSQL_PUBLIC_HOST=172.20.0.3 # 如果判题服务是分布式，请提供当前mysql所在服务器的公网ip
-      - MYSQL_PORT=3306 # hoj-mysql端口号
-      - MYSQL_DATABASE_NAME=hoj # 改动需要修改hoj-mysql镜像,默认为hoj
+      - MYSQL_PORT=3306 # hbutoj-mysql 端口号
+      - MYSQL_DATABASE_NAME=hoj # 改动需要修改 db 镜像,默认为 hoj
       - MYSQL_USERNAME=root 
-      - MYSQL_ROOT_PASSWORD=hoj123456 # hoj-mysql的root账号密码
+      - MYSQL_ROOT_PASSWORD=hoj123456 # mysql 的 root 账号密码
       - EMAIL_SERVER_HOST=smtp.qq.com # 请使用邮件服务的域名或ip
       - EMAIL_SERVER_PORT=465 # 请使用邮件服务的端口号
       - EMAIL_USERNMAE=-your_email_username # 请使用对应邮箱账号
       - EMAIL_PASSWORD=-your_email_password # 请使用对应邮箱密码
-      - REDIS_HOST=172.20.0.2 # hoj-redis的host
-      - REDIS_PORT=6379 # hoj-redis的port
-      - REDIS_PASSWORD=hoj123456 #hoj-redis的密码
+      - REDIS_HOST=172.20.0.2 # hbutoj-redis 的 host
+      - REDIS_PORT=6379 # hbutoj-redis 的 port
+      - REDIS_PASSWORD=hoj123456 # redis 的密码
       - OPEN_REMOTE_JUDGE=true # 是否开启对hdu和codeforces的虚拟判题
       # 开启虚拟判题请提供对应oj的账号密码 格式为 
       # username1,username2,...
@@ -72,28 +72,28 @@ services:
     ports:
       - "6688:6688"
     networks:
-      hoj-network:
+      hbutoj-network:
         ipv4_address: 172.20.0.5
         
-  hoj-redis:
+  hbutoj-redis:
     image: redis:5.0.9-alpine
-    container_name: hoj-redis
+    container_name: hbutoj-redis
     restart: always
     volumes:
-      - ./hoj/data/redis/data:/data
+      - ./hbutoj/data/redis/data:/data
     networks:
-      hoj-network:
+      hbutoj-network:
         ipv4_address: 172.20.0.2
     ports:
       - "6379:6379"
     command: redis-server --requirepass "hoj123456" --appendonly yes
         
-  hoj-mysql:
+  hbutoj-mysql:
     image: ghcr.io/1650041940/hbutoj_database:latest
-    container_name: hoj-mysql
+    container_name: hbutoj-mysql
     restart: always
     volumes:
-      - ./hoj/data/mysql/data:/var/lib/mysql
+      - ./hbutoj/data/mysql/data:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=hoj123456
       - TZ=Asia/Shanghai
@@ -102,15 +102,15 @@ services:
     ports:
       - "3306:3306"
     networks:
-      hoj-network:
+      hbutoj-network:
         ipv4_address: 172.20.0.3
       
-  hoj-nacos:
+  hbutoj-nacos:
     image: nacos/nacos-server:1.4.2
-    container_name: hoj-nacos
+    container_name: hbutoj-nacos
     restart: always
     depends_on: 
-      - hoj-mysql
+      - hbutoj-mysql
     environment:
       - JVM_XMX=384m
       - JVM_XMS=384m
@@ -125,7 +125,7 @@ services:
       - NACOS_AUTH_ENABLE=true # 开启鉴权
 
 networks:
-   hoj-network:
+   hbutoj-network:
      driver: bridge
      ipam:
        config:

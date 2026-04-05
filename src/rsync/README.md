@@ -1,9 +1,9 @@
 ## 前言
 
-当前文件夹为打包`hoj-rsync`镜像的相关文件，将这些文件复制到同一个文件夹内，之后执行以下命令进行打包成镜像.
+当前文件夹为打包 `hbutoj_rsync` 镜像的相关文件，将这些文件复制到同一个文件夹内，之后执行以下命令进行打包成镜像。
 
 ```shell
-docker build -t hoj-rsync .
+docker build -t hbutoj_rsync .
 ```
 
 或者直接下载本项目，进入到当前文件夹执行打包命令
@@ -11,7 +11,7 @@ docker build -t hoj-rsync .
 ```shell
 git clone <YOUR_DEPLOY_REPO_URL> && cd <YOUR_DEPLOY_REPO_DIR>/src/rsync
 
-docker build -t hoj-rsync .
+docker build -t hbutoj_rsync .
 ```
 
 **该服务用于测试用例数据在不同服务器之间的同步**
@@ -21,29 +21,29 @@ docker run启动
 - 主服务器（Backend所在服务器）
 
   ```shell
-  docker run -d --name hoj-rsync \
-  -v ./hoj/testcase:/hoj/testcase:ro \
+  docker run -d --name hbutoj-rsync \
+  -v ./hbutoj/testcase:/hoj/testcase:ro \
   -e RSYNC_MODE=master \
   -e RSYNC_USER=hojrsync \
   -e RSYNC_PASSWORD=hoj123456 \
   -p 873:873 \
   --restart=always \
-  hoj-rsync
+  hbutoj_rsync
   # ghcr.io/1650041940/hbutoj_rsync:latest
   ```
 
 - 从服务器（Judgeserver所在的服务器）
 
   ```shell
-  docker run -d --name hoj-rsync \
-  -v ./hoj/testcase:/hoj/testcase \
+  docker run -d --name hbutoj-rsync \
+  -v ./hbutoj/testcase:/hoj/testcase \
   -e RSYNC_MODE=slave \
   -e RSYNC_USER=hojrsync \
   -e RSYNC_PASSWORD=hoj123456 \
   -e RSYNC_MASTER_ADDR=master_server_ip \
   -p 873:873 \
   --restart=always \
-  hoj-rsync
+  hbutoj_rsync
   # ghcr.io/1650041940/hbutoj_rsync:latest
   ```
 
@@ -56,12 +56,12 @@ docker-compose启动
   ```yaml
   version: "3"
   services:
-    hoj-rsync-master:
+    hbutoj-rsync-master:
   #    image: ghcr.io/1650041940/hbutoj_rsync:latest
-      image: hoj-rsync
-      container_name: hoj-rsync-master
+      image: hbutoj_rsync
+      container_name: hbutoj-rsync-master
       volumes:
-        - ./hoj/testcase:/hoj/testcase:ro
+        - ./hbutoj/testcase:/hoj/testcase:ro
       environment:
         - RSYNC_MODE=master # 当前为slave主服务
         - RSYNC_USER=hojrsync # 请勿修改
@@ -75,10 +75,10 @@ docker-compose启动
   ```yaml
   version: "3"
   services:
-    hoj-rsync-slave:
+    hbutoj-rsync-slave:
   #    image: ghcr.io/1650041940/hbutoj_rsync:latest
-      image: hoj-rsync
-      container_name: hoj-rsync-slave
+      image: hbutoj_rsync
+      container_name: hbutoj-rsync-slave
       restart: always
       volumes:
         - ./judge/test_case:/hoj/testcase
