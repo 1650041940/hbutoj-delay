@@ -165,6 +165,72 @@ CALL Add_rating_tables;
 DROP PROCEDURE Add_rating_tables;
 
 /*
+* 2026.04.05 回填默认 rating 行（保证排行榜覆盖全部用户）
+*/
+INSERT IGNORE INTO user_practice_rating(uid, rating, solved_count, last_calc_month)
+SELECT u.uuid, 1200, 0, NULL
+FROM user_info u;
+
+INSERT IGNORE INTO user_contest_rating(uid, rating, contest_count)
+SELECT u.uuid, 1500, 0
+FROM user_info u;
+
+/*
+* 2026.04.05 新用户自动初始化 rating（避免新增用户不出现在排行榜）
+*/
+DROP PROCEDURE IF EXISTS Add_rating_triggers;
+DELIMITER $$
+
+CREATE PROCEDURE Add_rating_triggers ()
+BEGIN
+
+IF NOT EXISTS (
+	SELECT 1
+	FROM information_schema.TRIGGERS
+	WHERE trigger_schema = DATABASE()
+		AND trigger_name = 'trg_user_info_after_insert_practice_rating'
+) THEN
+	SET @sql := '
+		CREATE TRIGGER trg_user_info_after_insert_practice_rating
+		AFTER INSERT ON user_info
+		FOR EACH ROW
+		BEGIN
+			INSERT IGNORE INTO user_practice_rating(uid, rating, solved_count, last_calc_month)
+			VALUES (NEW.uuid, 1200, 0, NULL);
+		END
+	';
+	PREPARE stmt FROM @sql;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+END IF;
+
+IF NOT EXISTS (
+	SELECT 1
+	FROM information_schema.TRIGGERS
+	WHERE trigger_schema = DATABASE()
+		AND trigger_name = 'trg_user_info_after_insert_contest_rating'
+) THEN
+	SET @sql := '
+		CREATE TRIGGER trg_user_info_after_insert_contest_rating
+		AFTER INSERT ON user_info
+		FOR EACH ROW
+		BEGIN
+			INSERT IGNORE INTO user_contest_rating(uid, rating, contest_count)
+			VALUES (NEW.uuid, 1500, 0);
+		END
+	';
+	PREPARE stmt FROM @sql;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+END IF;
+
+END$$
+
+DELIMITER ;
+CALL Add_rating_triggers;
+DROP PROCEDURE Add_rating_triggers;
+
+/*
 * 2021.08.07 修改OI题目得分在OI排行榜新计分字段 分数计算为：OI题目总得分*0.1+2*题目难度
 */
 DROP PROCEDURE
