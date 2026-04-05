@@ -1,3 +1,270 @@
+# HBUTOJ Deploy
+
+本仓库用于部署 HBUTOJ。
+
+维护者：1650041940（GitHub：`https://github.com/1650041940`，GHCR：`ghcr.io/1650041940`）
+
+## 镜像发布与更新（推荐流程）
+
+目标：你在源码仓库修改后端/前端/判题端代码后，发布到你自己的镜像仓库；部署侧只需要 `docker compose pull` 即可更新。
+
+最短流程（你描述的标准用法）：
+
+1) 源码仓库（构建并推送镜像）：
+
+```bash
+cd /root/hoh/hoj/tools
+./hbutoj_build_and_push.sh
+```
+
+2) 部署仓库（拉取并启动）：
+
+```bash
+cd /root/services/hbutoj_deplay/standAlone
+docker compose pull
+docker compose up -d
+```
+
+### 1) 配置部署仓库拉取你自己的镜像
+
+以单机部署为例：先从示例文件生成本地配置（`.env` 不会提交到仓库，避免泄露密码）：
+
+```bash
+cp -n standAlone/.env.example standAlone/.env
+```
+
+然后编辑 `standAlone/.env`：
+
+- `HBUTOJ_IMAGE_PREFIX`：你的镜像仓库前缀（例如 `ghcr.io/<user>`）
+- `HBUTOJ_IMAGE_TAG`：通用版本号/标签（仍保留，但更推荐使用下面的“组件独立 tag”）
+- `HBUTOJ_BACKEND_IMAGE_TAG` / `HBUTOJ_FRONTEND_IMAGE_TAG` / `HBUTOJ_JUDGESERVER_IMAGE_TAG`：组件独立 tag（推荐，便于只更新单个服务）
+- `HBUTOJ_*_IMAGE`：镜像仓库名（repo name），你可以保持兼容（默认 `hoj_backend` 等），也可以改成你自己的命名（例如 `hbutoj_backend`）
+
+分布式部署对应：
+
+```bash
+cp -n distributed/main/.env.example distributed/main/.env
+cp -n distributed/judgeserver/.env.example distributed/judgeserver/.env
+```
+
+再按需修改 `distributed/main/.env` 与 `distributed/judgeserver/.env`。
+
+### 2) 从源码仓库构建并推送镜像
+
+在源码仓库执行（假设源码仓库在 `/root/hoh/hoj`）：
+
+```bash
+cd /root/hoh/hoj
+chmod +x tools/hbutoj_build_and_push.sh
+
+export HBUTOJ_IMAGE_PREFIX=ghcr.io/<your_user>
+export HBUTOJ_IMAGE_TAG=v1.0.0
+
+# 如果你改了镜像 repo name，也要在这里一致
+# export HBUTOJ_BACKEND_IMAGE=hbutoj_backend
+# export HBUTOJ_FRONTEND_IMAGE=hbutoj_frontend
+# export HBUTOJ_JUDGESERVER_IMAGE=hbutoj_judgeserver
+
+./tools/hbutoj_build_and_push.sh
+```
+
+说明：部署侧 `standAlone/docker-compose.yml` 默认包含 `hoj-mysql-checker`（一次性 SQL 检查/更新容器）。
+为了保证你在部署侧只需要 `docker compose pull && docker compose up -d` 就能更新，源码侧发布镜像时也应当包含：
+
+- `hbutoj_backend`
+- `hbutoj_frontend`
+- `hbutoj_judgeserver`
+- `hbutoj_database_checker`（mysql-checker）
+
+现在 `tools/hbutoj_build_and_push.sh` 已默认构建并推送 mysql-checker；如需跳过可设置：`HBUTOJ_BUILD_MYSQL_CHECKER=false`。
+
+常见坑：如果你是从聊天/网页复制命令，环境变量里可能混入中文标点（例如 `、`、全角逗号/空格），会导致：
+
+```text
+invalid reference format
+```
+
+排查方法：
+
+```bash
+echo "HBUTOJ_IMAGE_PREFIX=[$HBUTOJ_IMAGE_PREFIX]"
+printf '%q\n' "$HBUTOJ_IMAGE_PREFIX"
+```
+
+### 2.1) 只发布 judgeserver（热修推荐）
+
+当你只改了判题端（例如语言配置）时，只发布 `hoj-judgeserver` 更快、更稳。
+
+在源码仓库编译 `JudgeServer`：
+
+```bash
+export HBUTOJ_IMAGE_PREFIX=ghcr.io/<your_user>
+export HBUTOJ_IMAGE_TAG=v1.0.1
+export HBUTOJ_JUDGESERVER_IMAGE=hbutoj_judgeserver
+
+cd /root/hoh/hoj/hoj-springboot
+mvn -pl JudgeServer -am clean package -DskipTests
+```
+
+把 jar 放入构建上下文（注意：该 Dockerfile 使用 `COPY *.jar`，目录里不要残留多个 jar）：
+
+```bash
+rm -f /root/services/hbutoj_deplay/src/judgeserver/*.jar
+cp -f JudgeServer/target/hoj-judgeServer-*.jar /root/services/hbutoj_deplay/src/judgeserver/
+```
+
+构建并推送：
+
+```bash
+read -r -s GHCR_TOKEN
+printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u <your_user> --password-stdin
+unset GHCR_TOKEN
+
+docker build -t "$HBUTOJ_IMAGE_PREFIX/$HBUTOJ_JUDGESERVER_IMAGE:$HBUTOJ_IMAGE_TAG" /root/services/hbutoj_deplay/src/judgeserver
+docker push "$HBUTOJ_IMAGE_PREFIX/$HBUTOJ_JUDGESERVER_IMAGE:$HBUTOJ_IMAGE_TAG"
+```
+
+部署机切换到新版本（只更新 judgeserver）：
+
+```bash
+cd /root/services/hbutoj_deplay/standAlone
+sed -i 's/^HBUTOJ_IMAGE_TAG=.*/HBUTOJ_IMAGE_TAG=v1.0.1/' .env
+docker compose pull hoj-judgeserver
+docker compose up -d hoj-judgeserver
+```
+
+注意：推送前需先 `docker login` 到你的镜像仓库。
+
+以 GHCR 为例（`ghcr.io`）：
+
+1) 先在 GitHub 个人设置生成一个 **Personal access token (classic)**，至少勾选：`write:packages`、`read:packages`。
+
+2) 登录（交互式，最简单）：
+
+```bash
+docker login ghcr.io -u <your_user>
+# Password 粘贴你的 PAT
+```
+
+或（非交互式，避免 token 出现在命令历史里）：
+
+```bash
+read -r -s GHCR_TOKEN
+printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u <your_user> --password-stdin
+unset GHCR_TOKEN
+```
+
+### 3) 部署侧拉取并更新
+
+```bash
+cd /root/services/hbutoj_deplay/standAlone
+docker compose pull
+docker compose up -d
+```
+
+注意：`standAlone/docker-compose.yml` 里包含一个一次性任务容器 `hoj-mysql-checker`（用于检查/执行 SQL 更新）。
+
+- 如果你看到类似报错：`.../hoj_database_checker:latest: not found`，通常是 `standAlone/.env` 里把 `HBUTOJ_MYSQL_CHECKER_IMAGE` 配错了。
+   - 正确值应为：`HBUTOJ_MYSQL_CHECKER_IMAGE=hbutoj_database_checker`
+- 如果你没有把该镜像推送到自己的仓库，也可以在部署机本地构建一次（见 `src/mysql-checker/Dockerfile`）：
+
+```bash
+cd /root/services/hbutoj_deplay/src/mysql-checker
+docker build -t "$HBUTOJ_MYSQL_CHECKER_IMAGE_PREFIX/$HBUTOJ_MYSQL_CHECKER_IMAGE:$HBUTOJ_MYSQL_CHECKER_IMAGE_TAG" .
+```
+
+## 内存限制（≤ 3.9G）
+
+单机部署的所有服务都支持在 `standAlone/.env` 中通过 `*_MEM_LIMIT` 与 `*_JAVA_OPTS` 显式收敛内存。
+
+分布式部署同理：主服务修改 `distributed/main/.env`，判题机修改 `distributed/judgeserver/.env`。
+
+当前默认值（见 `standAlone/docker-compose.yml` 与 `standAlone/.env`）的 `mem_limit` 合计约为：
+
+- Redis 96M
+- MySQL 512M（InnoDB buffer pool 默认 256M）
+- Nacos 320M（JVM Xmx 默认 256m）
+- Backend 512M（JVM Xmx 默认 320m）
+- Frontend(Nginx) 96M
+- JudgeServer 512M（JVM Xmx 默认 320m）
+- MySQL Checker 128M
+- Autoheal 32M
+
+合计约 2208M（≈2.2G），满足“总内存 ≤ 3.9G”的目标，并预留了系统与容器运行时开销的空间。
+
+验证方式（部署机执行）：
+
+```bash
+cd /root/services/hbutoj_deplay/standAlone
+docker compose up -d
+docker stats --no-stream
+```
+
+说明：该 compose 同时写了 `deploy.resources.limits.memory` 与 `mem_limit`，其中 `mem_limit` 在普通 `docker compose` 模式下可生效（不需要 Swarm）。
+
+## 推荐 & Rating（做题/比赛）
+
+本项目内置“每日推荐题 + 做题 rating + 比赛 rating + 排行榜”，后端与前端均已集成。
+
+### 1) 关键字段语义
+
+- `problem.difficulty`：难度等级（0/1/2），主要用于题目列表展示与筛选。
+- `problem.difficulty_rating`：难度分（建议 600~2600），用于做题 rating 的计算与推荐排序。
+
+说明：如果历史数据里 `difficulty_rating=0` 或缺失，后端的月度任务会按 `difficulty(0/1/2)` 给一个合理的初始区间并逐月调整。
+
+### 2) 依赖的数据结构（来自哪些表）
+
+- 月度题目难度调整：基于 `judge`（提交记录）统计“尝试人数/通过人数/AC用户平均提交次数”。
+- 月度做题 rating：基于 `user_acproblem`（用户已 AC 题目）并结合 `judge` 统计每题尝试次数，再结合 `problem.difficulty_rating` 计算。
+- 比赛 rating：基于 `contest` 与比赛排行榜（内部会做幂等处理，避免重复计算）。
+
+### 3) 数据表（部署侧初始化已包含）
+
+这些表在 MySQL 初始化脚本中已经包含（见 `src/mysql/hoj.sql`）：
+
+- `user_practice_rating` / `user_practice_rating_history`
+- `user_contest_rating` / `user_contest_rating_history`
+- `problem_difficulty_history`
+- `contest_rating_event`
+
+### 4) 定时任务（后端已开启）
+
+后端已启用 Spring Scheduling（`@EnableScheduling`），默认 cron：
+
+- 每月 1 号 04:30：刷新题目难度（月度调整）+ 用户做题 rating（月度刷新）
+- 每天 04:10：处理已结束比赛的 contest rating（幂等）
+
+如果你希望更频繁/更早执行，可在源码侧调整对应 cron。
+
+### 5) API 与前端入口
+
+后端 API：
+
+- `GET /api/rating/get-my`（需要登录）
+- `GET /api/rating/practice-rank`（排行榜，支持分页与 `searchUser`）
+- `GET /api/rating/contest-rank`（排行榜，支持分页与 `searchUser`）
+
+前端页面：
+
+- 排行榜菜单中已包含 “Rating Rank”，路由为 `/rating-rank`
+
+### 6) 最小验证（部署机）
+
+1) 访问排行榜页面：`http://<host>/rating-rank`
+
+2) 检查接口返回：
+
+```bash
+curl -sS 'http://<host>/api/rating/practice-rank?currentPage=1&limit=10' | head
+curl -sS 'http://<host>/api/rating/contest-rank?currentPage=1&limit=10' | head
+```
+
+3) 观察定时任务效果（首次需要等到 cron 执行，或你手动在后端侧触发相同逻辑）：
+
+- `problem.difficulty_rating` 是否从 0 逐步变为合理区间
+- `user_practice_rating` / `user_contest_rating` 是否有数据写入
+
 # 环境准备
 
 ### Linux 环境
@@ -88,7 +355,7 @@ Windows 下的安装仅供体验，勿在生产环境使用。如有必要，请
 1. 选择好需要安装的位置，运行下面命令
 
    ```shell
-   git clone https://gitee.com/himitzh0730/hoj-deploy.git && cd hoj-deploy
+   git clone <YOUR_DEPLOY_REPO_URL> && cd <YOUR_DEPLOY_REPO_DIR>
    ```
 
 2. 单机部署（建议服务器内存2G以上）
@@ -176,7 +443,7 @@ Windows 下的安装仅供体验，勿在生产环境使用。如有必要，请
 
 ```yaml
 hoj-frontend:
-    image: registry.cn-shenzhen.aliyuncs.com/hcode/hoj_frontend
+   image: ${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}/${HBUTOJ_FRONTEND_IMAGE:-hbutoj_frontend}:${HBUTOJ_FRONTEND_IMAGE_TAG:-latest}
     container_name: hoj-frontend
     restart: always
     # 开启https，请提供证书
@@ -200,8 +467,6 @@ hoj-frontend:
 
 # 最后
 
-在线文档：[HOJ文档 https://docs.hdoi.cn](https://docs.hdoi.cn)
+## 项目链接
 
-在线demo：[https://www.hcode.top](https://www.hcode.top)
-
-源代码主仓库：[https://gitee.com/himitzh0730/hoj](https://gitee.com/himitzh0730/hoj)
+- GitHub：https://github.com/1650041940
