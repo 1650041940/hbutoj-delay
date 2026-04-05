@@ -13,7 +13,7 @@
 1) 源码仓库（构建并推送镜像）：
 
 ```bash
-cd /root/hoh/hoj/tools
+cd /root/source/hbutoj/tools
 ./hbutoj_build_and_push.sh
 ```
 
@@ -51,10 +51,10 @@ cp -n distributed/judgeserver/.env.example distributed/judgeserver/.env
 
 ### 2) 从源码仓库构建并推送镜像
 
-在源码仓库执行（假设源码仓库在 `/root/hoh/hoj`）：
+在源码仓库执行（假设源码仓库在 `/root/source/hbutoj`）：
 
 ```bash
-cd /root/hoh/hoj
+cd /root/source/hbutoj
 chmod +x tools/hbutoj_build_and_push.sh
 
 export HBUTOJ_IMAGE_PREFIX=ghcr.io/<your_user>
@@ -91,6 +91,18 @@ echo "HBUTOJ_IMAGE_PREFIX=[$HBUTOJ_IMAGE_PREFIX]"
 printf '%q\n' "$HBUTOJ_IMAGE_PREFIX"
 ```
 
+另外提醒：`docker compose` 的变量优先级里，**当前 shell 的环境变量会覆盖 `standAlone/.env`**。
+如果你之前执行过 `export HBUTOJ_MYSQL_IMAGE=...`（或其它 `HBUTOJ_*`），即使你修改了 `.env`，compose 仍可能用旧值。
+
+排查/修复方式：
+
+```bash
+env | grep '^HBUTOJ_MYSQL_IMAGE'
+unset HBUTOJ_MYSQL_IMAGE
+# 或者显式覆盖
+export HBUTOJ_MYSQL_IMAGE=hbutoj_database
+```
+
 ### 2.1) 只发布 judgeserver（热修推荐）
 
 当你只改了判题端（例如语言配置）时，只发布 `hoj-judgeserver` 更快、更稳。
@@ -102,7 +114,7 @@ export HBUTOJ_IMAGE_PREFIX=ghcr.io/<your_user>
 export HBUTOJ_IMAGE_TAG=v1.0.1
 export HBUTOJ_JUDGESERVER_IMAGE=hbutoj_judgeserver
 
-cd /root/hoh/hoj/hoj-springboot
+cd /root/source/hbutoj/hoj-springboot
 mvn -pl JudgeServer -am clean package -DskipTests
 ```
 
@@ -172,6 +184,11 @@ docker compose up -d
 cd /root/services/hbutoj_deplay/src/mysql-checker
 docker build -t "$HBUTOJ_MYSQL_CHECKER_IMAGE_PREFIX/$HBUTOJ_MYSQL_CHECKER_IMAGE:$HBUTOJ_MYSQL_CHECKER_IMAGE_TAG" .
 ```
+
+另外，如果你看到类似报错：`.../hbutoj_database:latest: not found`，这表示 **MySQL(DB) 镜像没有推送到你配置的镜像仓库** 或者镜像名不一致。
+
+- 正规修复方式 A（推荐，初始化最省事）：在 `src/mysql/` 目录构建并推送 DB 镜像到你配置的仓库（镜像名需与 `.env` 中 `HBUTOJ_MYSQL_IMAGE` 对齐）。
+- 正规修复方式 B（适合已有数据卷、或你愿意自行初始化 DB）：在 `standAlone/.env` 设置 `HBUTOJ_MYSQL_IMAGE_FULL=mysql:8.0.43`（或其它 mysql 版本），直接使用官方 MySQL 镜像。
 
 ## 内存限制（≤ 3.9G）
 

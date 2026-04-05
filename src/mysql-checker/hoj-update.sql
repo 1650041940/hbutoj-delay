@@ -176,6 +176,72 @@ SELECT u.uuid, 1500, 0
 FROM user_info u;
 
 /*
+* 2026.04.05 首次部署/升级后立刻回填做题 rating（避免等到下月定时任务才变化）
+* 说明：仅对 last_calc_month IS NULL 的用户执行一次。
+*/
+DROP PROCEDURE IF EXISTS Init_practice_rating_once;
+DELIMITER $$
+
+CREATE PROCEDURE Init_practice_rating_once ()
+BEGIN
+
+IF EXISTS (
+	SELECT 1
+	FROM user_practice_rating
+	WHERE last_calc_month IS NULL
+	LIMIT 1
+) THEN
+
+	UPDATE user_practice_rating upr
+	LEFT JOIN (
+		SELECT uid,
+			   solved_count,
+			   LEAST(2600, GREATEST(600,
+				 ROUND(0.9 * avg_w + 50.0 * (LOG(1 + solved_count) / LOG(2)))
+			   )) AS rating
+		FROM (
+			SELECT uid,
+				   COUNT(*) AS solved_count,
+				   SUM(eff_difficulty * weight) / COUNT(*) AS avg_w
+			FROM (
+				SELECT uap.uid AS uid,
+					   uap.pid AS pid,
+					   (CASE
+							WHEN p.difficulty_rating IS NULL OR p.difficulty_rating <= 0 THEN
+								(CASE p.difficulty
+									 WHEN 0 THEN 900
+									 WHEN 1 THEN 1400
+									 WHEN 2 THEN 1900
+									 ELSE 1500
+								 END)
+							ELSE p.difficulty_rating
+						END) AS eff_difficulty,
+					   (1.0 / (1.0 + 0.35 * (GREATEST(COUNT(j.submit_id), 1) - 1))) AS weight
+				FROM user_acproblem uap
+						 INNER JOIN problem p ON p.id = uap.pid
+						 INNER JOIN judge j ON j.uid = uap.uid
+					AND j.pid = uap.pid
+					AND j.cid = 0
+					AND j.submit_id <= uap.submit_id
+				GROUP BY uap.uid, uap.pid
+			) per_problem
+			GROUP BY uid
+		) per_user
+	) calc ON calc.uid = upr.uid
+	SET upr.solved_count = IFNULL(calc.solved_count, 0),
+		upr.rating = IFNULL(calc.rating, 1200),
+		upr.last_calc_month = DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m')
+	WHERE upr.last_calc_month IS NULL;
+
+END IF;
+
+END$$
+
+DELIMITER ;
+CALL Init_practice_rating_once;
+DROP PROCEDURE Init_practice_rating_once;
+
+/*
 * 2026.04.05 新用户自动初始化 rating（避免新增用户不出现在排行榜）
 */
 DROP PROCEDURE IF EXISTS Add_rating_triggers;

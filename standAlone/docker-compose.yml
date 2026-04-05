@@ -26,9 +26,9 @@ services:
 
   hoj-mysql:
     #仅支持amd64
-    image: ${HBUTOJ_MYSQL_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}}/${HBUTOJ_MYSQL_IMAGE:-hoj_database}:${HBUTOJ_MYSQL_IMAGE_TAG:-latest}
+    image: ${HBUTOJ_MYSQL_IMAGE_FULL:-${HBUTOJ_MYSQL_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}}/${HBUTOJ_MYSQL_IMAGE:-hbutoj_database}:${HBUTOJ_MYSQL_IMAGE_TAG:-latest}}
     #支持amd64、arm64
-    #image: himitzh/hoj_database
+    #image: himitzh/hbutoj_database
     container_name: hoj-mysql
     restart: always
     deploy:

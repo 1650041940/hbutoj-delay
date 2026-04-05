@@ -21,7 +21,7 @@ services:
         
   hoj-mysql:
     #仅支持amd64
-    image: ${HBUTOJ_MYSQL_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}}/${HBUTOJ_MYSQL_IMAGE:-hbutoj_database}:${HBUTOJ_IMAGE_TAG:-latest}
+    image: ${HBUTOJ_MYSQL_IMAGE_FULL:-${HBUTOJ_MYSQL_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}}/${HBUTOJ_MYSQL_IMAGE:-hbutoj_database}:${HBUTOJ_IMAGE_TAG:-latest}}
     #支持amd64、arm64
     #image: ghcr.io/1650041940/hbutoj_database:latest
     container_name: hoj-mysql
