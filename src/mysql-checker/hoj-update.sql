@@ -1,6 +1,97 @@
 USE `hoj`;
 
 /*
+* 2026.04.06 user_info增加年级列grade（如22/23/24...）
+*/
+DROP PROCEDURE
+IF EXISTS user_info_Add_grade;
+DELIMITER $$
+
+CREATE PROCEDURE user_info_Add_grade ()
+BEGIN
+
+IF NOT EXISTS (
+	SELECT
+		1
+	FROM
+		information_schema.`COLUMNS`
+	WHERE
+		table_schema = DATABASE()
+		AND table_name = 'user_info'
+		AND column_name = 'grade'
+) THEN
+	ALTER TABLE user_info ADD COLUMN grade varchar(20) DEFAULT NULL COMMENT '年级';
+END
+IF ; END$$
+
+DELIMITER ;
+CALL user_info_Add_grade ;
+
+DROP PROCEDURE user_info_Add_grade;
+
+
+/*
+* 2026.04.06 新增团队获奖(team_award)及配置(team_award_config)
+*/
+DROP PROCEDURE
+IF EXISTS Add_team_award_tables;
+DELIMITER $$
+
+CREATE PROCEDURE Add_team_award_tables ()
+BEGIN
+
+IF NOT EXISTS (
+	SELECT 1 FROM information_schema.`TABLES`
+	WHERE table_schema = DATABASE()
+		AND table_name = 'team_award'
+) THEN
+	CREATE TABLE `team_award` (
+	  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+	  `title` varchar(255) DEFAULT NULL COMMENT '标题',
+	  `contest_name` varchar(255) DEFAULT NULL COMMENT '比赛名称',
+	  `award` varchar(255) DEFAULT NULL COMMENT '奖项/等级',
+	  `award_time` datetime DEFAULT NULL COMMENT '获奖时间',
+	  `photo` varchar(255) DEFAULT NULL COMMENT '获奖照片URL',
+	  `description` mediumtext COMMENT '描述',
+	  `status` int(11) NOT NULL DEFAULT '0' COMMENT '0可见，1不可见',
+	  `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+	  `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+	  PRIMARY KEY (`id`)
+	) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+END
+IF ;
+
+IF NOT EXISTS (
+	SELECT 1 FROM information_schema.`TABLES`
+	WHERE table_schema = DATABASE()
+		AND table_name = 'team_award_config'
+) THEN
+	CREATE TABLE `team_award_config` (
+	  `id` bigint(20) NOT NULL COMMENT '固定为1',
+	  `page_size` int(11) NOT NULL DEFAULT '6' COMMENT '每页数量',
+	  PRIMARY KEY (`id`)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+END
+IF ;
+
+IF EXISTS (
+	SELECT 1 FROM information_schema.`TABLES`
+	WHERE table_schema = DATABASE()
+		AND table_name = 'team_award_config'
+) THEN
+	IF NOT EXISTS (SELECT 1 FROM team_award_config WHERE id = 1) THEN
+		INSERT INTO team_award_config (id, page_size) VALUES (1, 6);
+	END IF;
+END IF;
+
+END$$
+
+DELIMITER ;
+CALL Add_team_award_tables;
+
+DROP PROCEDURE Add_team_award_tables;
+
+/*
 * 2026.04.05 增加题目难度分 difficulty_rating（用于做题 rating/推荐）
 */
 DROP PROCEDURE IF EXISTS problem_Add_difficulty_rating;

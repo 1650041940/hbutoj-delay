@@ -872,6 +872,7 @@ CREATE TABLE `user_info` (
   `school` varchar(100) DEFAULT NULL COMMENT '学校',
   `course` varchar(100) DEFAULT NULL COMMENT '专业',
   `number` varchar(20) DEFAULT NULL COMMENT '学号',
+  `grade` varchar(20) DEFAULT NULL COMMENT '年级',
   `realname` varchar(100) DEFAULT NULL COMMENT '真实姓名',
   `gender` varchar(20) DEFAULT 'secrecy' NOT NULL  COMMENT '性别',
   `github` varchar(255) DEFAULT NULL COMMENT 'github地址',
@@ -890,6 +891,38 @@ CREATE TABLE `user_info` (
   UNIQUE KEY `EMAIL_UNIQUE` (`email`),
   UNIQUE KEY `avatar` (`avatar`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+/*Table structure for table `team_award` */
+
+DROP TABLE IF EXISTS `team_award`;
+
+CREATE TABLE `team_award` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) DEFAULT NULL COMMENT '标题',
+  `contest_name` varchar(255) DEFAULT NULL COMMENT '比赛名称',
+  `award` varchar(255) DEFAULT NULL COMMENT '奖项/等级',
+  `award_time` datetime DEFAULT NULL COMMENT '获奖时间',
+  `photo` varchar(255) DEFAULT NULL COMMENT '获奖照片URL',
+  `description` mediumtext COMMENT '描述',
+  `status` int(11) NOT NULL DEFAULT '0' COMMENT '0可见，1不可见',
+  `gmt_create` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `gmt_modified` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+
+/*Table structure for table `team_award_config` */
+
+DROP TABLE IF EXISTS `team_award_config`;
+
+CREATE TABLE `team_award_config` (
+  `id` bigint(20) NOT NULL COMMENT '固定为1',
+  `page_size` int(11) NOT NULL DEFAULT '6' COMMENT '每页数量',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `team_award_config` (`id`, `page_size`) VALUES (1, 6);
 
 /*Table structure for table `user_record` */
 
