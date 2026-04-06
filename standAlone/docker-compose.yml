@@ -159,6 +159,12 @@ services:
       - FORCED_UPDATE_REMOTE_JUDGE_ACCOUNT=${FORCED_UPDATE_REMOTE_JUDGE_ACCOUNT:-false}
     ports:
       - ${BACKEND_PORT:-6688}:${BACKEND_PORT:-6688}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:${BACKEND_PORT:-6688}/api/get-website-config >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
     networks:
       hbutoj-network:
         ipv4_address: ${BACKEND_HOST:-172.20.0.5}
@@ -187,6 +193,9 @@ services:
       - BACKEND_SERVER_HOST=${BACKEND_HOST:-172.20.0.5} # backend后端服务地址
       - BACKEND_SERVER_PORT=${BACKEND_PORT:-6688} # backend后端服务端口号
       - USE_HTTPS=false # 使用https请设置为true
+    depends_on:
+      hbutoj-backend:
+        condition: service_healthy
     ports:
       - "80:80"
       - "443:443"
