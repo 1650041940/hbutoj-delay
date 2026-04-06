@@ -114,7 +114,7 @@ export HBUTOJ_IMAGE_PREFIX=ghcr.io/<your_user>
 export HBUTOJ_IMAGE_TAG=v1.0.1
 export HBUTOJ_JUDGESERVER_IMAGE=hbutoj_judgeserver
 
-cd /root/source/hbutoj/hoj-springboot
+cd /root/source/hbutoj/hbutoj-springboot
 mvn -pl JudgeServer -am clean package -DskipTests
 ```
 
