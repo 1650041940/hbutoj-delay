@@ -2,7 +2,7 @@ services:
 
   hbutoj-judgeserver:
     #仅支持amd64
-    image: ${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}/${HBUTOJ_JUDGESERVER_IMAGE:-hbutoj_judgeserver}:${HBUTOJ_IMAGE_TAG:-latest}
+      image: ${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}/${HBUTOJ_JUDGESERVER_IMAGE:-hbutoj_judgeserver}:${HBUTOJ_JUDGESERVER_IMAGE_TAG:-${HBUTOJ_IMAGE_TAG:-latest}}
     #支持amd64、arm64
     #image: ghcr.io/1650041940/hbutoj_judgeserver:latest
     container_name: hbutoj-judgeserver

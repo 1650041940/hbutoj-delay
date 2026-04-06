@@ -26,7 +26,7 @@ services:
 
   hbutoj-mysql:
     #仅支持amd64
-    image: ${HBUTOJ_MYSQL_IMAGE_FULL:-${HBUTOJ_MYSQL_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}}/${HBUTOJ_MYSQL_IMAGE:-hbutoj_database}:${HBUTOJ_MYSQL_IMAGE_TAG:-latest}}
+    image: ${HBUTOJ_MYSQL_IMAGE_FULL:-${HBUTOJ_MYSQL_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}}/${HBUTOJ_MYSQL_IMAGE:-hbutoj_database}:${HBUTOJ_MYSQL_IMAGE_TAG:-${HBUTOJ_IMAGE_TAG:-latest}}}
     #支持amd64、arm64
     #image: himitzh/hbutoj_database
     container_name: hbutoj-mysql
@@ -93,7 +93,7 @@ services:
 
   hbutoj-backend:
     #仅支持amd64
-    image: ${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}/${HBUTOJ_BACKEND_IMAGE:-hbutoj_backend}:${HBUTOJ_BACKEND_IMAGE_TAG:-latest}
+    image: ${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}/${HBUTOJ_BACKEND_IMAGE:-hbutoj_backend}:${HBUTOJ_BACKEND_IMAGE_TAG:-${HBUTOJ_IMAGE_TAG:-latest}}
     #支持amd64、arm64
     #image: himitzh/hoj_backend
     container_name: hbutoj-backend
@@ -165,7 +165,7 @@ services:
 
   hbutoj-frontend:
     #仅支持amd64
-    image: ${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}/${HBUTOJ_FRONTEND_IMAGE:-hbutoj_frontend}:${HBUTOJ_FRONTEND_IMAGE_TAG:-latest}
+    image: ${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}/${HBUTOJ_FRONTEND_IMAGE:-hbutoj_frontend}:${HBUTOJ_FRONTEND_IMAGE_TAG:-${HBUTOJ_IMAGE_TAG:-latest}}
     #支持amd64、arm64
     #image: himitzh/hoj_frontend
     container_name: hbutoj-frontend
@@ -196,7 +196,7 @@ services:
 
   hbutoj-judgeserver:
     #仅支持amd64
-    image: ${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}/${HBUTOJ_JUDGESERVER_IMAGE:-hbutoj_judgeserver}:${HBUTOJ_JUDGESERVER_IMAGE_TAG:-latest}
+    image: ${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}/${HBUTOJ_JUDGESERVER_IMAGE:-hbutoj_judgeserver}:${HBUTOJ_JUDGESERVER_IMAGE_TAG:-${HBUTOJ_IMAGE_TAG:-latest}}
     #支持amd64、arm64
     #image: himitzh/hoj_judgeserver
     container_name: hbutoj-judgeserver
@@ -252,7 +252,7 @@ services:
 
   hbutoj-mysql-checker:
     #仅支持amd64
-    image: ${HBUTOJ_MYSQL_CHECKER_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}}/${HBUTOJ_MYSQL_CHECKER_IMAGE:-hbutoj_database_checker}:${HBUTOJ_MYSQL_CHECKER_IMAGE_TAG:-latest}
+    image: ${HBUTOJ_MYSQL_CHECKER_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}}/${HBUTOJ_MYSQL_CHECKER_IMAGE:-hbutoj_database_checker}:${HBUTOJ_MYSQL_CHECKER_IMAGE_TAG:-${HBUTOJ_IMAGE_TAG:-latest}}
     #支持amd64、arm64
     #image: himitzh/hoj_database_checker
     container_name: hbutoj-mysql-checker
