@@ -98,7 +98,7 @@ th.rank {
     background: #FFCCCC;
 }
 
-.team.star{
+.team.star {
     background-color: #ffffcc;
 }
 
@@ -110,8 +110,9 @@ th.rank {
 ::-webkit-scrollbar {
     width: 0px;
 }
-.label{
-    color:#343a40 !important;
+
+.label {
+    color: #343a40 !important;
 }
 
 /*
@@ -141,10 +142,12 @@ th.rank {
 .label-warning {
     background-color: #ff9800 !important;
 }
-.fw-bold{
+
+.fw-bold {
     font-weight: bold;
 }
-.univ{
+
+.univ {
     font-size: 60%;
     font-weight: normal;
     color: dimgrey;
@@ -152,14 +155,16 @@ th.rank {
     display: block;
     overflow: hidden;
 }
-.try-count{
+
+.try-count {
     font-weight: normal;
     font-size: 60%;
     display: block;
     margin-top: 2px;
 }
+
 .modal {
-    width:100%;
+    width: 100%;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -175,11 +180,13 @@ table.rank-fixed {
     align-items: center;
     gap: 10px;
     height: 100%;
-    min-width: 0; /* 关键：允许子元素收缩 */
+    min-width: 0;
+    /* 关键：允许子元素收缩 */
 }
 
 .team-avatar {
-    flex: 0 0 auto; /* 不伸缩，不收缩 */
+    flex: 0 0 auto;
+    /* 不伸缩，不收缩 */
     width: 50px;
     height: 50px;
     border-radius: 50%;
@@ -192,7 +199,8 @@ table.rank-fixed {
     flex-direction: column;
     justify-content: center;
     flex: 1 1 auto;
-    min-width: 0; /* 允许内部文本截断 */
+    min-width: 0;
+    /* 允许内部文本截断 */
 }
 
 .team-title {
@@ -216,6 +224,6 @@ table.rank-fixed {
     text-overflow: ellipsis;
 }
 
-.table>tbody>tr>td{
+.table>tbody>tr>td {
     padding: 5px !important;
 }
