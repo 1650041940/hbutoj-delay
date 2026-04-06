@@ -178,7 +178,7 @@ services:
       - "443:443"
     networks:
       hbutoj-network:
-        ipv4_address: 172.20.0.6 
+        ipv4_address: ${FRONTEND_HOST:-172.20.0.6}
 
   hbutoj-rsync-master:
     #仅支持amd64
@@ -219,7 +219,7 @@ services:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-hoj123456}
     networks:
       hbutoj-network:
-        ipv4_address: 172.20.0.7
+        ipv4_address: ${MYSQL_CHECKER_HOST:-172.20.0.7}
 
   hbutoj-autohealth:  # 监控不健康的容器进行重启
     restart: always

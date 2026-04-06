@@ -6,8 +6,10 @@
 
 # Local environment files (keep *.example tracked)
 /standAlone/.env
+/standAlone/.env.local*
 /distributed/main/.env
 /distributed/judgeserver/.env
+/distributed/**/.env.local*
 
 # Local backups
 /standAlone/.env.bak.*
