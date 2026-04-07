@@ -9,6 +9,11 @@ services:
         limits:
           memory: ${REDIS_MEM_LIMIT:-96M}
     mem_limit: ${REDIS_MEM_LIMIT:-96M}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     volumes:
       - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/data/redis/data:/data
     networks:
@@ -36,6 +41,11 @@ services:
         limits:
           memory: ${MYSQL_MEM_LIMIT:-512M}
     mem_limit: ${MYSQL_MEM_LIMIT:-512M}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     volumes:
       - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/data/mysql/data:/var/lib/mysql
     environment:
@@ -90,6 +100,11 @@ services:
         limits:
           memory: ${NACOS_MEM_LIMIT:-320M}
     mem_limit: ${NACOS_MEM_LIMIT:-320M}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   hbutoj-backend:
     #仅支持amd64
@@ -103,6 +118,11 @@ services:
         limits:
           memory: ${BACKEND_MEM_LIMIT:-512M}
     mem_limit: ${BACKEND_MEM_LIMIT:-512M}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       hbutoj-redis:
         condition: service_healthy
@@ -181,6 +201,11 @@ services:
         limits:
           memory: ${FRONTEND_MEM_LIMIT:-96M}
     mem_limit: ${FRONTEND_MEM_LIMIT:-96M}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     # 开启https，请提供证书
     #volumes:
     #  - ./server.crt:/etc/nginx/etc/crt/server.crt
@@ -215,6 +240,11 @@ services:
         limits:
           memory: ${JUDGESERVER_MEM_LIMIT:-512M}
     mem_limit: ${JUDGESERVER_MEM_LIMIT:-512M}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       hbutoj-mysql:
         condition: service_healthy
@@ -270,6 +300,11 @@ services:
         limits:
           memory: ${MYSQL_CHECKER_MEM_LIMIT:-128M}
     mem_limit: ${MYSQL_CHECKER_MEM_LIMIT:-128M}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       hbutoj-mysql:
         condition: service_healthy
@@ -290,6 +325,11 @@ services:
         limits:
           memory: ${AUTOHEAL_MEM_LIMIT:-32M}
     mem_limit: ${AUTOHEAL_MEM_LIMIT:-32M}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     environment:
       - AUTOHEAL_CONTAINER_LABEL=all
     volumes:
