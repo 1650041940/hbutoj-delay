@@ -22,21 +22,6 @@ fi
 
 cd "$TARGET_DIR"
 
-# Ensure backwards-compatible data directory names for standAlone deployments.
-# Some historical scripts/configs reference `hoj/` while newer setups use `hbutoj/`.
-# We create a missing counterpart symlink based on whichever directory exists.
-if [[ "$STACK_DIR" == "standAlone" ]]; then
-  if [[ -d "hbutoj" && ! -e "hoj" ]]; then
-    ln -s "hbutoj" "hoj"
-  elif [[ -d "hoj" && ! -e "hbutoj" ]]; then
-    ln -s "hoj" "hbutoj"
-  fi
-  # Compatibility for a historical typo path.
-  if [[ -e "hbutoj" && ! -e "hbutoh" ]]; then
-    ln -s "hbutoj" "hbutoh"
-  fi
-fi
-
 if [[ "$NO_PULL" == "--no-pull" ]]; then
   echo "==> Skipping pull (using local images): $TARGET_DIR"
 else

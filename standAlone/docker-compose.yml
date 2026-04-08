@@ -15,7 +15,7 @@ services:
         max-size: "10m"
         max-file: "3"
     volumes:
-      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/data/redis/data:/data
+      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/data/redis/data:/data
     networks:
       hbutoj-network:
         ipv4_address: ${REDIS_HOST:-172.20.0.2}
@@ -47,7 +47,7 @@ services:
         max-size: "10m"
         max-file: "3"
     volumes:
-      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/data/mysql/data:/var/lib/mysql
+      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/data/mysql/data:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-hoj123456} # mysql数据库root账号的密码
       - TZ=Asia/Shanghai
@@ -131,9 +131,9 @@ services:
       hbutoj-nacos:
         condition: service_healthy
     volumes:
-      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/file:/hoj/file
-      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/testcase:/hoj/testcase
-      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/log/backend:/hoj/log/backend
+      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/file:/hoj/file
+      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/testcase:/hoj/testcase
+      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/log/backend:/hoj/log/backend
     environment:
       - TZ=Asia/Shanghai
       - JAVA_OPTS=${BACKEND_JAVA_OPTS:--Xms128m -Xmx320m}
@@ -209,8 +209,8 @@ services:
     # 开启https，请提供证书
     #volumes:
     #  - ./server.crt:/etc/nginx/etc/crt/server.crt
-    #  - ./server.key:/etc/nginx/etc/crt/server.key
-    # 修改前端logo
+      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/judge/interactive:/judge/interactive
+      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/log/judgeserver:/judge/log/judgeserver
     #  - ./logo.a0924d7d.png:/usr/share/nginx/html/assets/img/logo.a0924d7d.png
     #  - ./backstage.8bce8c6e.png:/usr/share/nginx/html/assets/img/backstage.8bce8c6e.png
     environment:
@@ -251,12 +251,12 @@ services:
       hbutoj-nacos:
         condition: service_healthy
     volumes:
-      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/testcase:/judge/test_case
-      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/judge/log:/judge/log
-      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/judge/run:/judge/run
-      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/judge/spj:/judge/spj
-      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/judge/interactive:/judge/interactive
-      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/log/judgeserver:/judge/log/judgeserver
+      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/testcase:/judge/test_case
+      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/judge/log:/judge/log
+      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/judge/run:/judge/run
+      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/judge/spj:/judge/spj
+      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/judge/interactive:/judge/interactive
+      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/log/judgeserver:/judge/log/judgeserver
     environment:
       - TZ=Asia/Shanghai
       - JAVA_OPTS=${JUDGESERVER_JAVA_OPTS:--Xms128m -Xmx320m} # 修正JVM参数以便适应单机部署

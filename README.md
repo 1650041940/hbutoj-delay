@@ -51,12 +51,11 @@ docker compose up -d
 
 ## 数据目录（重要）
 
-Compose 通过 `HBUTOJ_DATA_DIRECTORY`（推荐）或兼容变量 `HOJ_DATA_DIRECTORY` 指定宿主机数据根目录。
+Compose 通过 `HBUTOJ_DATA_DIRECTORY` 指定宿主机数据根目录。
 
-- 当前线上常见目录：`standAlone/hoj/`（兼容保留）
-- 推荐新目录：`standAlone/hbutoj/`
+- 推荐目录：`standAlone/hbutoj/`
 
-你可以先不迁移数据，只要在 `.env` 里保持指向现有目录即可。
+如果你历史数据在 `standAlone/hoj/`，请使用下方迁移脚本迁移到 `standAlone/hbutoj/`。
 
 ## 数据目录迁移（可回滚脚本）
 

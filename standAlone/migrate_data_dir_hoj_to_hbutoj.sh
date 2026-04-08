@@ -63,7 +63,7 @@ DST_DIR="$SCRIPT_DIR/hbutoj"
 
 if [[ ! -d "$SRC_DIR" ]]; then
   echo "ERROR: source directory not found: $SRC_DIR" >&2
-  echo "If your data directory is elsewhere, set HBUTOJ_DATA_DIRECTORY/HOJ_DATA_DIRECTORY accordingly in .env instead of running this script." >&2
+  echo "If your data directory is elsewhere, set HBUTOJ_DATA_DIRECTORY accordingly in .env instead of running this script." >&2
   exit 1
 fi
 

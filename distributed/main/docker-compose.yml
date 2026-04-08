@@ -10,7 +10,7 @@ services:
           memory: ${REDIS_MEM_LIMIT:-96M}
     mem_limit: ${REDIS_MEM_LIMIT:-96M}
     volumes:
-      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/data/redis/data:/data
+      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/data/redis/data:/data
     networks:
       hbutoj-network:
         ipv4_address: ${REDIS_HOST:-172.20.0.2}
@@ -32,7 +32,7 @@ services:
           memory: ${MYSQL_MEM_LIMIT:-512M}
     mem_limit: ${MYSQL_MEM_LIMIT:-512M}
     volumes:
-      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/data/mysql/data:/var/lib/mysql
+      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/data/mysql/data:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-hoj123456} # mysql数据库root账号的密码
       - TZ=Asia/Shanghai
@@ -97,9 +97,9 @@ services:
       - hbutoj-mysql
       - hbutoj-nacos
     volumes:
-      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/file:/hoj/file
-      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/testcase:/hoj/testcase
-      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/log/backend:/hoj/log/backend
+      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/file:/hoj/file
+      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/testcase:/hoj/testcase
+      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/log/backend:/hoj/log/backend
     environment:
       - TZ=Asia/Shanghai
       - JAVA_OPTS=${BACKEND_JAVA_OPTS:--Xms128m -Xmx320m}
@@ -192,7 +192,7 @@ services:
           memory: ${RSYNC_MEM_LIMIT:-64M}
     mem_limit: ${RSYNC_MEM_LIMIT:-64M}
     volumes:
-      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/testcase:/hoj/testcase:ro
+      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/testcase:/hoj/testcase:ro
     environment:
       - RSYNC_MODE=master
       - RSYNC_USER=hojrsync 
