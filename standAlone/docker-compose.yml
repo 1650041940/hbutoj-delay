@@ -1,0 +1,343 @@
+version: "3"
+services:
+  hbutoj-redis:
+    image: redis:5.0.9-alpine
+    container_name: hbutoj-redis
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: ${REDIS_MEM_LIMIT:-96M}
+    mem_limit: ${REDIS_MEM_LIMIT:-96M}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    volumes:
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/data/redis/data:/data
+    networks:
+      hbutoj-network:
+        ipv4_address: ${REDIS_HOST:-172.20.0.2}
+    ports:
+      - ${REDIS_PORT:-6379}:6379
+    # --requirepass 后面为redis访问密码
+    command: redis-server --requirepass ${REDIS_PASSWORD:-hoj123456} --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-hoj123456}", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  hbutoj-mysql:
+    #仅支持amd64
+    image: ${HBUTOJ_MYSQL_IMAGE_FULL:-${HBUTOJ_MYSQL_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}}/${HBUTOJ_MYSQL_IMAGE:-hbutoj_database}:${HBUTOJ_MYSQL_IMAGE_TAG:-${HBUTOJ_IMAGE_TAG:-latest}}}
+    #支持amd64、arm64
+    #image: himitzh/hbutoj_database
+    container_name: hbutoj-mysql
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: ${MYSQL_MEM_LIMIT:-512M}
+    mem_limit: ${MYSQL_MEM_LIMIT:-512M}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    volumes:
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/data/mysql/data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-hoj123456} # mysql数据库root账号的密码
+      - TZ=Asia/Shanghai
+      - NACOS_USERNAME=${NACOS_USERNAME:-root} # 后续nacos所用管理员账号
+      - NACOS_PASSWORD=${NACOS_PASSWORD:-hoj123456} # 后续nacos所用管理员密码
+    ports:
+      - ${MYSQL_PUBLIC_PORT:-3306}:3306
+    networks:
+      hbutoj-network:
+        ipv4_address: ${MYSQL_HOST:-172.20.0.3}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-hoj123456}"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  hbutoj-nacos:
+    image: nacos/nacos-server:1.4.2
+    #支持arm64
+    #image: centralx/nacos-server:1.4.2
+    container_name: hbutoj-nacos
+    restart: always
+    depends_on:
+      hbutoj-mysql:
+        condition: service_healthy
+    environment:
+      - JVM_XMX=${NACOS_JVM_XMX:-256m}
+      - JVM_XMS=${NACOS_JVM_XMS:-256m}
+      - JVM_XMN=${NACOS_JVM_XMN:-128m}
+      - MODE=standalone
+      - SPRING_DATASOURCE_PLATFORM=mysql
+      - MYSQL_SERVICE_HOST=${MYSQL_HOST:-172.20.0.3}
+      - MYSQL_SERVICE_PORT=3306
+      - MYSQL_SERVICE_USER=root
+      - MYSQL_SERVICE_PASSWORD=${MYSQL_ROOT_PASSWORD:-hoj123456} # 与上面数据库密码一致
+      - MYSQL_SERVICE_DB_NAME=nacos
+      - NACOS_AUTH_ENABLE=true # 开启鉴权
+    ports:
+      - ${NACOS_PORT:-8848}:8848
+    healthcheck:
+      test: curl -f http://${NACOS_HOST:-172.20.0.4}:8848/nacos/index.html || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 12
+    networks:
+      hbutoj-network:
+        ipv4_address: ${NACOS_HOST:-172.20.0.4}
+    deploy:
+      resources:
+        limits:
+          memory: ${NACOS_MEM_LIMIT:-320M}
+    mem_limit: ${NACOS_MEM_LIMIT:-320M}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  hbutoj-backend:
+    #仅支持amd64
+    image: ${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}/${HBUTOJ_BACKEND_IMAGE:-hbutoj_backend}:${HBUTOJ_BACKEND_IMAGE_TAG:-${HBUTOJ_IMAGE_TAG:-latest}}
+    #支持amd64、arm64
+    #image: himitzh/hoj_backend
+    container_name: hbutoj-backend
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: ${BACKEND_MEM_LIMIT:-512M}
+    mem_limit: ${BACKEND_MEM_LIMIT:-512M}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      hbutoj-redis:
+        condition: service_healthy
+      hbutoj-mysql:
+        condition: service_healthy
+      hbutoj-nacos:
+        condition: service_healthy
+    volumes:
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/file:/hoj/file
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/testcase:/hoj/testcase
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/log/backend:/hoj/log/backend
+    environment:
+      - TZ=Asia/Shanghai
+      - JAVA_OPTS=${BACKEND_JAVA_OPTS:--Xms128m -Xmx320m}
+      - BACKEND_SERVER_PORT=${BACKEND_PORT:-6688}
+      - NACOS_URL=${NACOS_HOST:-172.20.0.4}:8848
+      - NACOS_USERNAME=${NACOS_USERNAME:-root} # 登录 http://ip:8848/nacos 分布式配置中心与注册中心的后台的账号
+      - NACOS_PASSWORD=${NACOS_PASSWORD:-hoj123456} # 密码
+      - JWT_TOKEN_SECRET=${JWT_TOKEN_SECRET:-default} # token加密秘钥 默认则生成32位随机密钥
+      - JWT_TOKEN_EXPIRE=${JWT_TOKEN_EXPIRE:-86400} # token过期时间默认为24小时 86400s
+      - JWT_TOKEN_FRESH_EXPIRE=${JWT_TOKEN_FRESH_EXPIRE:-43200} # token默认12小时可自动刷新
+      - JUDGE_TOKEN=${JUDGE_TOKEN:-default} # 调用判题服务器的token 默认则生成32位随机密钥
+      - MYSQL_HOST=${MYSQL_HOST:-172.20.0.3}
+      - MYSQL_PUBLIC_HOST=${MYSQL_PUBLIC_HOST} # 如果判题服务是分布式，请提供当前mysql所在服务器的公网ip
+      - MYSQL_PUBLIC_PORT=${MYSQL_PUBLIC_PORT:-3306}
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE_NAME=hoj # 改动需要修改hoj-mysql镜像,默认为hoj
+      - MYSQL_USERNAME=root
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-hoj123456}
+      - EMAIL_SERVER_HOST=${EMAIL_SERVER_HOST:-smtp.qq.com} # 请使用邮件服务的域名或ip
+      - EMAIL_SERVER_PORT=${EMAIL_SERVER_PORT:-465} # 请使用邮件服务的端口号
+      - EMAIL_USERNAME=${EMAIL_USERNAME:-your_email_username} # 请使用对应邮箱账号
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD:-your_email_password} # 请使用对应邮箱密码
+      - REDIS_HOST=${REDIS_HOST:-172.20.0.2}
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-hoj123456}
+      - OPEN_REMOTE_JUDGE=true # 是否开启各个remote judge
+      # 开启虚拟判题请提供对应oj的账号密码 格式为
+      # username1,username2,...
+      # password1,password2,...
+      - HDU_ACCOUNT_USERNAME_LIST=${HDU_ACCOUNT_USERNAME_LIST}
+      - HDU_ACCOUNT_PASSWORD_LIST=${HDU_ACCOUNT_PASSWORD_LIST}
+      - CF_ACCOUNT_USERNAME_LIST=${CF_ACCOUNT_USERNAME_LIST}
+      - CF_ACCOUNT_PASSWORD_LIST=${CF_ACCOUNT_PASSWORD_LIST}
+      - POJ_ACCOUNT_USERNAME_LIST=${POJ_ACCOUNT_USERNAME_LIST}
+      - POJ_ACCOUNT_PASSWORD_LIST=${POJ_ACCOUNT_PASSWORD_LIST}
+      - ATCODER_ACCOUNT_USERNAME_LIST=${ATCODER_ACCOUNT_USERNAME_LIST}
+      - ATCODER_ACCOUNT_PASSWORD_LIST=${ATCODER_ACCOUNT_PASSWORD_LIST}
+      - SPOJ_ACCOUNT_USERNAME_LIST=${SPOJ_ACCOUNT_USERNAME_LIST}
+      - SPOJ_ACCOUNT_PASSWORD_LIST=${SPOJ_ACCOUNT_PASSWORD_LIST}
+      - LIBRE_ACCOUNT_USERNAME_LIST=${LIBRE_ACCOUNT_USERNAME_LIST}
+      - LIBRE_ACCOUNT_PASSWORD_LIST=${LIBRE_ACCOUNT_PASSWORD_LIST}
+      # 是否强制使用配置文件的remote judge账号覆盖原有系统的账号列表
+      - FORCED_UPDATE_REMOTE_JUDGE_ACCOUNT=${FORCED_UPDATE_REMOTE_JUDGE_ACCOUNT:-false}
+    ports:
+      - ${BACKEND_PORT:-6688}:${BACKEND_PORT:-6688}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://${BACKEND_HOST:-172.20.0.5}:${BACKEND_PORT:-6688}/api/get-website-config >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    networks:
+      hbutoj-network:
+        ipv4_address: ${BACKEND_HOST:-172.20.0.5}
+
+  hbutoj-frontend:
+    #仅支持amd64
+    image: ${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}/${HBUTOJ_FRONTEND_IMAGE:-hbutoj_frontend}:${HBUTOJ_FRONTEND_IMAGE_TAG:-${HBUTOJ_IMAGE_TAG:-latest}}
+    #支持amd64、arm64
+    #image: himitzh/hoj_frontend
+    container_name: hbutoj-frontend
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: ${FRONTEND_MEM_LIMIT:-96M}
+    mem_limit: ${FRONTEND_MEM_LIMIT:-96M}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # 开启https，请提供证书
+    #volumes:
+    #  - ./server.crt:/etc/nginx/etc/crt/server.crt
+    #  - ./server.key:/etc/nginx/etc/crt/server.key
+    # 修改前端logo
+    #  - ./logo.a0924d7d.png:/usr/share/nginx/html/assets/img/logo.a0924d7d.png
+    #  - ./backstage.8bce8c6e.png:/usr/share/nginx/html/assets/img/backstage.8bce8c6e.png
+    environment:
+      - SERVER_NAME=localhost # 域名(例如baidu.com)或localhost(本地)
+      - BACKEND_SERVER_HOST=${BACKEND_HOST:-172.20.0.5} # backend后端服务地址
+      - BACKEND_SERVER_PORT=${BACKEND_PORT:-6688} # backend后端服务端口号
+      - USE_HTTPS=false # 使用https请设置为true
+    depends_on:
+      hbutoj-backend:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      hbutoj-network:
+        ipv4_address: ${FRONTEND_HOST:-172.20.0.6}
+
+  hbutoj-judgeserver:
+    #仅支持amd64
+    image: ${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}/${HBUTOJ_JUDGESERVER_IMAGE:-hbutoj_judgeserver}:${HBUTOJ_JUDGESERVER_IMAGE_TAG:-${HBUTOJ_IMAGE_TAG:-latest}}
+    #支持amd64、arm64
+    #image: himitzh/hoj_judgeserver
+    container_name: hbutoj-judgeserver
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: ${JUDGESERVER_MEM_LIMIT:-512M}
+    mem_limit: ${JUDGESERVER_MEM_LIMIT:-512M}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      hbutoj-mysql:
+        condition: service_healthy
+      hbutoj-nacos:
+        condition: service_healthy
+    volumes:
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/testcase:/judge/test_case
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/judge/log:/judge/log
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/judge/run:/judge/run
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/judge/spj:/judge/spj
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/judge/interactive:/judge/interactive
+      - ${HBUTOJ_DATA_DIRECTORY:-${HOJ_DATA_DIRECTORY}}/log/judgeserver:/judge/log/judgeserver
+    environment:
+      - TZ=Asia/Shanghai
+      - JAVA_OPTS=${JUDGESERVER_JAVA_OPTS:--Xms128m -Xmx320m} # 修正JVM参数以便适应单机部署
+      - HOJ_DB_PUBLIC_HOST=${MYSQL_HOST:-172.20.0.3}
+      - HOJ_DB_PUBLIC_PORT=3306
+      - HOJ_DB_NAME=hoj
+      - HOJ_DB_USERNAME=root
+      - HOJ_DB_PASSWORD=${MYSQL_ROOT_PASSWORD:-hoj123456}
+      - JUDGE_SERVER_IP=${JUDGE_SERVER_IP:-172.20.0.7}
+      - JUDGE_SERVER_PORT=${JUDGE_SERVER_PORT:-8088}
+      - JUDGE_SERVER_NAME=${JUDGE_SERVER_NAME:-judger-alone} # 判题服务的名字
+      - NACOS_URL=${NACOS_HOST:-172.20.0.4}:8848
+      - NACOS_USERNAME=${NACOS_USERNAME:-root}
+      - NACOS_PASSWORD=${NACOS_PASSWORD:-hoj123456}
+      - MAX_TASK_NUM=${MAX_TASK_NUM:--1} # -1表示最大可接收判题任务数为cpu核心数+1
+      - REMOTE_JUDGE_OPEN=${REMOTE_JUDGE_OPEN:-true} # 当前判题服务器是否开启远程虚拟判题功能
+      - REMOTE_JUDGE_MAX_TASK_NUM=${REMOTE_JUDGE_MAX_TASK_NUM:--1} # -1表示最大可接收远程判题任务数为cpu核心数*2+1
+      - PARALLEL_TASK=${PARALLEL_TASK:-default} # 默认沙盒并行判题程序数为cpu核心数
+    ports:
+      - ${JUDGE_SERVER_PORT:-8088}:${JUDGE_SERVER_PORT:-8088}
+      # - "0.0.0.0:5050:5050" # 一般不开放安全沙盒端口
+    healthcheck:
+      test: curl -f http://${JUDGE_SERVER_IP:-172.20.0.7}:${JUDGE_SERVER_PORT:-8088}/version || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    privileged: true # 设置容器的权限为root
+    shm_size: 512mb
+    networks:
+      hbutoj-network:
+        ipv4_address: ${JUDGE_SERVER_IP:-172.20.0.7}
+
+  hbutoj-mysql-checker:
+    #仅支持amd64
+    image: ${HBUTOJ_MYSQL_CHECKER_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-registry.cn-shenzhen.aliyuncs.com/hcode}}/${HBUTOJ_MYSQL_CHECKER_IMAGE:-hbutoj_database_checker}:${HBUTOJ_MYSQL_CHECKER_IMAGE_TAG:-${HBUTOJ_IMAGE_TAG:-latest}}
+    #支持amd64、arm64
+    #image: himitzh/hoj_database_checker
+    container_name: hbutoj-mysql-checker
+    deploy:
+      resources:
+        limits:
+          memory: ${MYSQL_CHECKER_MEM_LIMIT:-128M}
+    mem_limit: ${MYSQL_CHECKER_MEM_LIMIT:-128M}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      hbutoj-mysql:
+        condition: service_healthy
+    links:
+      - hbutoj-mysql:mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-hoj123456}
+    networks:
+      hbutoj-network:
+        ipv4_address: ${MYSQL_CHECKER_HOST:-172.20.0.8}
+
+  hbutoj-autohealth: # 监控不健康的容器进行重启
+    restart: always
+    container_name: hbutoj-autohealth
+    image: willfarrell/autoheal
+    deploy:
+      resources:
+        limits:
+          memory: ${AUTOHEAL_MEM_LIMIT:-32M}
+    mem_limit: ${AUTOHEAL_MEM_LIMIT:-32M}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=all
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+networks:
+  hbutoj-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${SUBNET:-172.20.0.0/16}

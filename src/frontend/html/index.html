@@ -1,0 +1,163 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/favicon.ico?v=20260406"><link href="https://cdnjs.cloudflare.com/ajax/libs/element-ui/2.14.0/theme-chalk/index.min.css" rel="stylesheet"><link href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/4.0.0/github-markdown.min.css" rel="stylesheet"><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" rel="stylesheet"><link href="https://cdnjs.cloudflare.com/ajax/libs/muse-ui/3.0.2/muse-ui.min.css" rel="stylesheet"><title>HBUTOJ OnlineJudge</title><script>// IE 10 and earlier
+        if (window.navigator.userAgent.indexOf('MSIE ') > 0 &&
+          window.confirm('Your browser is not supported, click \'OK\' to update')) {
+          window.location = 'http://outdatedbrowser.com'
+        }</script><style>@-webkit-keyframes enter {
+          0% {
+            opacity: 0;
+            top: -10px;
+          }
+
+          5% {
+            opacity: 1;
+            top: 0px;
+          }
+
+          50.9% {
+            opacity: 1;
+            top: 0px;
+          }
+
+          55.9% {
+            opacity: 0;
+            top: 10px;
+          }
+        }
+
+        @keyframes enter {
+          0% {
+            opacity: 0;
+            top: -10px;
+          }
+
+          5% {
+            opacity: 1;
+            top: 0px;
+          }
+
+          50.9% {
+            opacity: 1;
+            top: 0px;
+          }
+
+          55.9% {
+            opacity: 0;
+            top: 10px;
+          }
+        }
+
+        @-moz-keyframes enter {
+          0% {
+            opacity: 0;
+            top: -10px;
+          }
+
+          5% {
+            opacity: 1;
+            top: 0px;
+          }
+
+          50.9% {
+            opacity: 1;
+            top: 0px;
+          }
+
+          55.9% {
+            opacity: 0;
+            top: 10px;
+          }
+        }
+
+        body {
+          background: #f8f8f9;
+        }
+
+        #app-loader {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          margin-left: -27.5px;
+          margin-top: -27.5px;
+        }
+
+        #app-loader .square {
+          background: #2d8cf0;
+          width: 15px;
+          height: 15px;
+          float: left;
+          top: -10px;
+          margin-right: 5px;
+          margin-top: 5px;
+          position: relative;
+          opacity: 0;
+          -webkit-animation: enter 6s infinite;
+          animation: enter 6s infinite;
+        }
+
+        #app-loader .enter {
+          top: 0px;
+          opacity: 1;
+        }
+
+        #app-loader .square:nth-child(1) {
+          -webkit-animation-delay: 1.8s;
+          -moz-animation-delay: 1.8s;
+          animation-delay: 1.8s;
+        }
+
+        #app-loader .square:nth-child(2) {
+          -webkit-animation-delay: 2.1s;
+          -moz-animation-delay: 2.1s;
+          animation-delay: 2.1s;
+        }
+
+        #app-loader .square:nth-child(3) {
+          -webkit-animation-delay: 2.4s;
+          -moz-animation-delay: 2.4s;
+          animation-delay: 2.4s;
+          background: #ff9900;
+        }
+
+        #app-loader .square:nth-child(4) {
+          -webkit-animation-delay: 0.9s;
+          -moz-animation-delay: 0.9s;
+          animation-delay: 0.9s;
+        }
+
+        #app-loader .square:nth-child(5) {
+          -webkit-animation-delay: 1.2s;
+          -moz-animation-delay: 1.2s;
+          animation-delay: 1.2s;
+        }
+
+        #app-loader .square:nth-child(6) {
+          -webkit-animation-delay: 1.5s;
+          -moz-animation-delay: 1.5s;
+          animation-delay: 1.5s;
+        }
+
+        #app-loader .square:nth-child(8) {
+          -webkit-animation-delay: 0.3s;
+          -moz-animation-delay: 0.3s;
+          animation-delay: 0.3s;
+        }
+
+        #app-loader .square:nth-child(9) {
+          -webkit-animation-delay: 0.6s;
+          -moz-animation-delay: 0.6s;
+          animation-delay: 0.6s;
+        }
+
+        #app-loader .clear {
+          clear: both;
+        }
+
+        #app-loader .last {
+          margin-right: 0;
+        }
+
+        #app-loader .loader-content {
+          color: #3498db;
+          font-size: 16px;
+          font-weight: 600;
+        }</style><link href="/assets/css/chunk-0d34ba8a.8a9b2e38.css" rel="prefetch"><link href="/assets/css/chunk-21732d96.1f6fb654.css" rel="prefetch"><link href="/assets/css/chunk-2b52b4fe.ada2d265.css" rel="prefetch"><link href="/assets/css/chunk-2d8b8a08.e0431943.css" rel="prefetch"><link href="/assets/css/chunk-3755eb2b.1ee08f3a.css" rel="prefetch"><link href="/assets/css/chunk-38b07b5d.80fd45f0.css" rel="prefetch"><link href="/assets/css/chunk-3ef84ff5.7cf1d248.css" rel="prefetch"><link href="/assets/css/chunk-4b10e546.eac0a445.css" rel="prefetch"><link href="/assets/css/chunk-4f004a5f.8008aded.css" rel="prefetch"><link href="/assets/css/chunk-5ccaeea6.fa91b10e.css" rel="prefetch"><link href="/assets/css/chunk-6143454e.1b85082c.css" rel="prefetch"><link href="/assets/css/chunk-66e00e7b.a21b9c93.css" rel="prefetch"><link href="/assets/css/chunk-69c78dea.9f909ead.css" rel="prefetch"><link href="/assets/css/chunk-69dafeb6.3776f1a6.css" rel="prefetch"><link href="/assets/css/chunk-756de156.e8780b64.css" rel="prefetch"><link href="/assets/css/chunk-77cebcf7.69165c25.css" rel="prefetch"><link href="/assets/css/chunk-79937758.b3d43316.css" rel="prefetch"><link href="/assets/css/chunk-7b553d40.879dab52.css" rel="prefetch"><link href="/assets/css/chunk-9d802ec6.ec8c8358.css" rel="prefetch"><link href="/assets/css/chunk-9eb5193e.bbbff161.css" rel="prefetch"><link href="/assets/css/chunk-a99918b0.55db0521.css" rel="prefetch"><link href="/assets/css/chunk-ae9249ea.7e34f924.css" rel="prefetch"><link href="/assets/css/chunk-c10d038a.dd659975.css" rel="prefetch"><link href="/assets/css/chunk-cc9cb1b0.103d9970.css" rel="prefetch"><link href="/assets/css/chunk-d40011b4.cb46c73a.css" rel="prefetch"><link href="/assets/css/chunk-d949e95a.4e86982e.css" rel="prefetch"><link href="/assets/css/chunk-ddd7c1e0.04e61a3e.css" rel="prefetch"><link href="/assets/js/chunk-0d34ba8a.6344f610.js" rel="prefetch"><link href="/assets/js/chunk-21732d96.8c2e75c8.js" rel="prefetch"><link href="/assets/js/chunk-2b52b4fe.eb6d654f.js" rel="prefetch"><link href="/assets/js/chunk-2d0afe0f.3a6ea47e.js" rel="prefetch"><link href="/assets/js/chunk-2d0d362a.69dee154.js" rel="prefetch"><link href="/assets/js/chunk-2d8b8a08.0ece4ebd.js" rel="prefetch"><link href="/assets/js/chunk-3755eb2b.f2a09916.js" rel="prefetch"><link href="/assets/js/chunk-38b07b5d.5758ad36.js" rel="prefetch"><link href="/assets/js/chunk-3ef84ff5.709c9305.js" rel="prefetch"><link href="/assets/js/chunk-4b10e546.d4a8f225.js" rel="prefetch"><link href="/assets/js/chunk-4f004a5f.1c537bd2.js" rel="prefetch"><link href="/assets/js/chunk-5ccaeea6.d376f002.js" rel="prefetch"><link href="/assets/js/chunk-6143454e.4d825d11.js" rel="prefetch"><link href="/assets/js/chunk-66e00e7b.f0436624.js" rel="prefetch"><link href="/assets/js/chunk-69c78dea.0ab40951.js" rel="prefetch"><link href="/assets/js/chunk-69dafeb6.87eb7ab8.js" rel="prefetch"><link href="/assets/js/chunk-74597c67.fc02f44b.js" rel="prefetch"><link href="/assets/js/chunk-756de156.3c0c312c.js" rel="prefetch"><link href="/assets/js/chunk-77cebcf7.723bacdd.js" rel="prefetch"><link href="/assets/js/chunk-79937758.53fb594e.js" rel="prefetch"><link href="/assets/js/chunk-7b553d40.23d3d473.js" rel="prefetch"><link href="/assets/js/chunk-9d802ec6.2c38e0b1.js" rel="prefetch"><link href="/assets/js/chunk-9eb5193e.e2691bda.js" rel="prefetch"><link href="/assets/js/chunk-a99918b0.67846cdb.js" rel="prefetch"><link href="/assets/js/chunk-ae9249ea.7145b86f.js" rel="prefetch"><link href="/assets/js/chunk-c10d038a.da18fb5d.js" rel="prefetch"><link href="/assets/js/chunk-cc9cb1b0.d180d0e3.js" rel="prefetch"><link href="/assets/js/chunk-d40011b4.2ab340e4.js" rel="prefetch"><link href="/assets/js/chunk-d949e95a.a664b8cb.js" rel="prefetch"><link href="/assets/js/chunk-ddd7c1e0.98ebc8e8.js" rel="prefetch"><link href="/assets/css/app.3587e652.css" rel="preload" as="style"><link href="/assets/css/chunk-vendors.3523a65b.css" rel="preload" as="style"><link href="/assets/js/app.3287326b.js" rel="preload" as="script"><link href="/assets/js/chunk-vendors.04e4c9b4.js" rel="preload" as="script"><link href="/assets/css/chunk-vendors.3523a65b.css" rel="stylesheet"><link href="/assets/css/app.3587e652.css" rel="stylesheet"></head><body><noscript><strong>We're sorry but HBUTOJ doesn't work properly without JavaScript enabled. Please enable it to continue.</strong></noscript><div id="app"></div><div id="app-loader"><div class="square"></div><div class="square"></div><div class="square last"></div><div class="square clear"></div><div class="square"></div><div class="square last"></div><div class="square clear"></div><div class="square"></div><div class="square last"></div><div class="loader-content"><span>Loading...</span></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/vue-router/3.2.0/vue-router.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.26.0/axios.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/element-ui/2.15.3/index.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.3.2/highlight.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/locale/zh-cn.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/locale/en-gb.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/locale/ja.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/locale/ko.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/4.9.0-rc.1/echarts.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/vue-echarts/5.0.0-beta.0/vue-echarts.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/vuex/3.5.1/vuex.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/muse-ui/3.0.2/muse-ui.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script><script src="/assets/js/chunk-vendors.04e4c9b4.js"></script><script src="/assets/js/app.3287326b.js"></script></body></html>

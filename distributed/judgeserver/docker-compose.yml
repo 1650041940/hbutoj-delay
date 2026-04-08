@@ -1,0 +1,67 @@
+services:
+
+  hbutoj-judgeserver:
+    #仅支持amd64
+      image: ${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}/${HBUTOJ_JUDGESERVER_IMAGE:-hbutoj_judgeserver}:${HBUTOJ_JUDGESERVER_IMAGE_TAG:-${HBUTOJ_IMAGE_TAG:-latest}}
+    #支持amd64、arm64
+    #image: ghcr.io/1650041940/hbutoj_judgeserver:latest
+    container_name: hbutoj-judgeserver
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: ${JUDGESERVER_MEM_LIMIT:-512M}
+    mem_limit: ${JUDGESERVER_MEM_LIMIT:-512M}
+    volumes:
+      - ${HBUTOJ_JUDGESERVER_DATA_DIRECTORY:-${HOJ_JUDGESERVER_DATA_DIRECTORY}}/test_case:/judge/test_case
+      - ${HBUTOJ_JUDGESERVER_DATA_DIRECTORY:-${HOJ_JUDGESERVER_DATA_DIRECTORY}}/log:/judge/log
+      - ${HBUTOJ_JUDGESERVER_DATA_DIRECTORY:-${HOJ_JUDGESERVER_DATA_DIRECTORY}}/run:/judge/run
+      - ${HBUTOJ_JUDGESERVER_DATA_DIRECTORY:-${HOJ_JUDGESERVER_DATA_DIRECTORY}}/spj:/judge/spj
+      - ${HBUTOJ_JUDGESERVER_DATA_DIRECTORY:-${HOJ_JUDGESERVER_DATA_DIRECTORY}}/interactive:/judge/interactive
+      - ${HBUTOJ_JUDGESERVER_DATA_DIRECTORY:-${HOJ_JUDGESERVER_DATA_DIRECTORY}}/log/judgeserver:/judge/log/judgeserver
+    environment:
+      - TZ=Asia/Shanghai
+      - JAVA_OPTS=${JUDGESERVER_JAVA_OPTS:--Xms128m -Xmx320m}
+      - JUDGE_SERVER_IP=${JUDGE_SERVER_IP} # 服务器公网ip
+      - JUDGE_SERVER_PORT=${JUDGE_SERVER_PORT:-8088}
+      - JUDGE_SERVER_NAME=${JUDGE_SERVER_NAME} # 判题服务的名称，最好每个判题机不一样
+      - NACOS_URL=${NACOS_HOST}:${NACOS_PORT}  # nacos所在服务的ip:port
+      - NACOS_USERNAME=${NACOS_USERNAME:-root}  # 分布式需要修正nacos账号密码
+      - NACOS_PASSWORD=${NACOS_PASSWORD:-hoj123456}
+      - MAX_TASK_NUM=${MAX_TASK_NUM:--1} # -1表示最大可接收判题任务数为cpu核心数+1
+      - REMOTE_JUDGE_OPEN=${REMOTE_JUDGE_OPEN:-true} # 当前判题服务器是否开启远程虚拟判题功能
+      - REMOTE_JUDGE_MAX_TASK_NUM=${REMOTE_JUDGE_MAX_TASK_NUM:--1} # -1表示最大可接收远程判题任务数为cpu核心数*2+1
+      - PARALLEL_TASK=${PARALLEL_TASK:-default} # 默认沙盒并行判题程序数为cpu核心数
+    ports:
+      - ${JUDGE_SERVER_PORT:-8088}:${JUDGE_SERVER_PORT:-8088}
+      # - "0.0.0.0:5050:5050" # 一般不开放安全沙盒端口
+    healthcheck:
+      test: curl -f http://localhost:${JUDGE_SERVER_PORT:-8088}/version || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    shm_size: 512mb
+    privileged: true # 设置容器的权限为root
+
+  hbutoj-rsync-slave:
+    #仅支持amd64
+    image: ${HBUTOJ_RSYNC_IMAGE_PREFIX:-${HBUTOJ_IMAGE_PREFIX:-ghcr.io/1650041940}}/${HBUTOJ_RSYNC_IMAGE:-hbutoj_rsync}:${HBUTOJ_RSYNC_IMAGE_TAG:-latest}
+    #支持amd64、arm64
+    #image: ghcr.io/1650041940/hbutoj_rsync:latest
+    container_name: hbutoj-rsync-slave
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: ${RSYNC_MEM_LIMIT:-64M}
+    mem_limit: ${RSYNC_MEM_LIMIT:-64M}
+    volumes:
+      - ${HBUTOJ_JUDGESERVER_DATA_DIRECTORY:-${HOJ_JUDGESERVER_DATA_DIRECTORY}}/test_case:/hoj/testcase
+      - ${HBUTOJ_JUDGESERVER_DATA_DIRECTORY:-${HOJ_JUDGESERVER_DATA_DIRECTORY}}/log:/hoj/log
+    environment:
+      - RSYNC_MODE=slave # 当前为slave从服务
+      - RSYNC_USER=hojrsync # 与主服务器的rsync的用户一致
+      - RSYNC_PASSWORD=${RSYNC_PASSWORD} # 与主服务器的rsync密码一致
+      - RSYNC_MASTER_ADDR=${RSYNC_MASTER_ADDR} # 写入主服务器ip
+    ports:
+      - "0.0.0.0:873:873"
