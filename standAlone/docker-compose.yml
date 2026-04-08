@@ -209,8 +209,6 @@ services:
     # 开启https，请提供证书
     #volumes:
     #  - ./server.crt:/etc/nginx/etc/crt/server.crt
-      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/judge/interactive:/judge/interactive
-      - ${HBUTOJ_DATA_DIRECTORY:-./hbutoj}/log/judgeserver:/judge/log/judgeserver
     #  - ./logo.a0924d7d.png:/usr/share/nginx/html/assets/img/logo.a0924d7d.png
     #  - ./backstage.8bce8c6e.png:/usr/share/nginx/html/assets/img/backstage.8bce8c6e.png
     environment:
