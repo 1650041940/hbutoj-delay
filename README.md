@@ -7,7 +7,7 @@
 1) 准备配置文件：
 
 ```bash
-cd /root/services/hbutoj_deplay
+cd <repo_root>
 cp -n standAlone/.env.example standAlone/.env
 ```
 
@@ -19,7 +19,7 @@ cp -n standAlone/.env.example standAlone/.env
 3) 启动：
 
 ```bash
-cd /root/services/hbutoj_deplay/standAlone
+cd <repo_root>/standAlone
 docker compose pull
 docker compose up -d
 ```
@@ -29,7 +29,7 @@ docker compose up -d
 在源码仓库执行构建脚本（会把产物同步到本仓库的 `src/*` 构建上下文，并构建/推送镜像）：
 
 ```bash
-cd /root/source/hbutoj
+cd <source_repo_root>
 chmod +x tools/hbutoj_build_and_push.sh
 
 export HBUTOJ_IMAGE_PREFIX=ghcr.io/<your_user>
@@ -44,7 +44,7 @@ export HBUTOJ_MYSQL_CHECKER_IMAGE_TAG=v1.0.0
 部署机更新：
 
 ```bash
-cd /root/services/hbutoj_deplay/standAlone
+cd <repo_root>/standAlone
 docker compose pull
 docker compose up -d
 ```
@@ -62,7 +62,7 @@ Compose 通过 `HBUTOJ_DATA_DIRECTORY` 指定宿主机数据根目录。
 仓库提供迁移脚本用于把 `standAlone/hoj/` 迁移为 `standAlone/hbutoj/`（默认 dry-run，不会直接改线上数据）：
 
 ```bash
-cd /root/services/hbutoj_deplay/standAlone
+cd <repo_root>/standAlone
 bash migrate_data_dir_hoj_to_hbutoj.sh --dry-run
 ```
 
